@@ -87,10 +87,6 @@ export class CognitoStack extends cdk.Stack {
       removalPolicy: cdk.RemovalPolicy.RETAIN,
     });
 
-    // Enable advanced security mode via escape hatch (AdvancedSecurityMode enum is deprecated in CDK v2).
-    const cfnUserPool = this.userPool.node.defaultChild as cdk.CfnResource;
-    cfnUserPool.addPropertyOverride('UserPoolAddOns', { AdvancedSecurityMode: 'ENFORCED' });
-
     // ── Google Identity Provider ────────────────────────────────────────────
     const googleProvider = new cognito.UserPoolIdentityProviderGoogle(this, 'GoogleProvider', {
       userPool: this.userPool,
@@ -113,13 +109,16 @@ export class CognitoStack extends cdk.Stack {
     });
 
     // ── API Resource Server with OAuth 2.0 Scopes ───────────────────────────
+    // Scopes are namespaced under "global" so that more specific entity-level
+    // scopes (e.g. "meets.read", "swimmers.write") can be added later without
+    // conflicting.  Full scope strings: <identifier>/global.read, <identifier>/global.write
     const apiScope = {
       read: new cognito.ResourceServerScope({
-        scopeName: 'read',
+        scopeName: 'global.read',
         scopeDescription: 'Read-only access to the Swim Meet API',
       }),
       write: new cognito.ResourceServerScope({
-        scopeName: 'write',
+        scopeName: 'global.write',
         scopeDescription: 'Write access to the Swim Meet API',
       }),
     };
@@ -189,10 +188,15 @@ export class CognitoStack extends cdk.Stack {
 
     // ── CDK Nag suppressions ────────────────────────────────────────────────
     // MFA with SMS is intentionally disabled; OTP (TOTP) is used instead.
+    // Advanced security mode is intentionally disabled per project requirements.
     NagSuppressions.addResourceSuppressions(this.userPool, [
       {
         id: 'AwsSolutions-COG2',
         reason: 'SMS MFA is disabled intentionally; TOTP MFA is configured as optional.',
+      },
+      {
+        id: 'AwsSolutions-COG7',
+        reason: 'Advanced security mode is not required for this project.',
       },
     ]);
   }

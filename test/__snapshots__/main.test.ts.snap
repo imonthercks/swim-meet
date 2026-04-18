@@ -49,6 +49,10 @@ exports[`CognitoStack snapshot 1`] = `
               "id": "AwsSolutions-COG2",
               "reason": "SMS MFA is disabled intentionally; TOTP MFA is configured as optional.",
             },
+            {
+              "id": "AwsSolutions-COG7",
+              "reason": "Advanced security mode is not required for this project.",
+            },
           ],
         },
       },
@@ -83,9 +87,6 @@ exports[`CognitoStack snapshot 1`] = `
           },
         },
         "SmsVerificationMessage": "The verification code to your new account is {####}",
-        "UserPoolAddOns": {
-          "AdvancedSecurityMode": "ENFORCED",
-        },
         "UsernameAttributes": [
           "email",
         ],
@@ -106,11 +107,11 @@ exports[`CognitoStack snapshot 1`] = `
         "Scopes": [
           {
             "ScopeDescription": "Read-only access to the Swim Meet API",
-            "ScopeName": "read",
+            "ScopeName": "global.read",
           },
           {
             "ScopeDescription": "Write access to the Swim Meet API",
-            "ScopeName": "write",
+            "ScopeName": "global.write",
           },
         ],
         "UserPoolId": {
@@ -182,7 +183,7 @@ exports[`CognitoStack snapshot 1`] = `
                 {
                   "Ref": "UserPoolApiResourceServer544B1930",
                 },
-                "/read",
+                "/global.read",
               ],
             ],
           },
@@ -193,7 +194,7 @@ exports[`CognitoStack snapshot 1`] = `
                 {
                   "Ref": "UserPoolApiResourceServer544B1930",
                 },
-                "/write",
+                "/global.write",
               ],
             ],
           },

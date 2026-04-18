@@ -54,8 +54,8 @@ test('CognitoStack creates a resource server with read and write scopes', () => 
   template.hasResourceProperties('AWS::Cognito::UserPoolResourceServer', {
     Identifier: 'https://api.swim-meet.example.com',
     Scopes: [
-      { ScopeName: 'read', ScopeDescription: 'Read-only access to the Swim Meet API' },
-      { ScopeName: 'write', ScopeDescription: 'Write access to the Swim Meet API' },
+      { ScopeName: 'global.read', ScopeDescription: 'Read-only access to the Swim Meet API' },
+      { ScopeName: 'global.write', ScopeDescription: 'Write access to the Swim Meet API' },
     ],
   });
 });
