@@ -3,7 +3,7 @@ import { Aspects } from 'aws-cdk-lib';
 import { Template } from 'aws-cdk-lib/assertions';
 import { AwsSolutionsChecks } from 'cdk-nag';
 import { CognitoStack } from '../src/cognito-stack';
-import { SwimMeetStage } from '../src/main';
+import { SwimMeetStage } from '../src/swim-meet-stage';
 
 function buildTestStage(app: cdk.App): SwimMeetStage {
   return new SwimMeetStage(app, 'TestStage', {
