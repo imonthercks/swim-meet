@@ -17,7 +17,8 @@ const devEnv = {
 };
 
 // Read the Google Client ID from CDK context and fail fast if it is absent.
-// Pass via: cdk deploy --context googleClientId=<id>
+// cdk.context.json contains a placeholder value for CI synthesis; override it at deploy time:
+// cdk deploy --context googleClientId=<your-google-client-id>
 const googleClientId: string = app.node.tryGetContext('googleClientId');
 if (!googleClientId) {
   throw new Error(
