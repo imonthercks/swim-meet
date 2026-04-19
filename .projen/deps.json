@@ -6,6 +6,10 @@
       "type": "build"
     },
     {
+      "name": "@types/aws-lambda",
+      "type": "build"
+    },
+    {
       "name": "@types/jest",
       "type": "build"
     },
@@ -79,11 +83,11 @@
       "type": "runtime"
     },
     {
-      "name": "@aws-sdk/client-s3",
+      "name": "@aws-sdk/client-lambda",
       "type": "runtime"
     },
     {
-      "name": "@aws-sdk/client-sfn",
+      "name": "@aws-sdk/client-s3",
       "type": "runtime"
     },
     {
@@ -92,6 +96,10 @@
     },
     {
       "name": "@aws-sdk/util-dynamodb",
+      "type": "runtime"
+    },
+    {
+      "name": "@aws/durable-execution-sdk-js",
       "type": "runtime"
     },
     {

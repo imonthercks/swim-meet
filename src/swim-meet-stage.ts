@@ -59,10 +59,10 @@ export interface SwimMeetStageProps extends cdk.StageProps {
  * promote the same artifact from dev → staging → prod.
  *
  * Stack dependency order (each stack depends on the ones above it):
- *   CognitoStack   — Cognito User Pool + Google federation
- *   StorageStack   — S3 buckets + DynamoDB single-table
- *   ProcessingStack — Bedrock Agent (Code Interpreter) + Step Functions pipeline + SQS
- *   ApiStack       — HTTP API Gateway + Cognito JWT routes
+ *   CognitoStack    — Cognito User Pool + Google federation
+ *   StorageStack    — S3 buckets + DynamoDB single-table
+ *   ProcessingStack — Bedrock Agent (Code Interpreter) + Lambda Durable orchestrator + SQS
+ *   ApiStack        — HTTP API Gateway + Cognito JWT routes
  */
 export class SwimMeetStage extends cdk.Stage {
   public readonly cognitoStack: CognitoStack;
@@ -93,7 +93,7 @@ export class SwimMeetStage extends cdk.Stage {
       ssmPrefix: props.ssmPrefix,
     });
 
-    // ── Processing (Bedrock Agent + Step Functions + SQS) ────────────────────
+    // ── Processing (Bedrock Agent + Lambda Durable Functions + SQS) ─────────
     this.processingStack = new ProcessingStack(this, 'ProcessingStack', {
       env: props.env,
       rawPdfBucket: this.storageStack.rawPdfBucket,

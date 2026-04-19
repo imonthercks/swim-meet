@@ -16,13 +16,22 @@ const project = new awscdk.AwsCdkTypeScriptApp({
     '@aws-sdk/client-bedrock-agent-runtime',
     '@aws-sdk/client-dynamodb',
     '@aws-sdk/client-s3',
-    '@aws-sdk/client-sfn',
     '@aws-sdk/s3-request-presigner',
     '@aws-sdk/util-dynamodb',
+    // AWS Lambda Durable Execution SDK — provides withDurableExecution wrapper and
+    // DurableContext for writing checkpointed, long-running Lambda orchestrators.
+    // This package is NOT in the @aws-sdk/* namespace so esbuild bundles it into
+    // the Lambda ZIP automatically (it is not available in the runtime environment).
+    '@aws/durable-execution-sdk-js',
+    // @aws-sdk/client-lambda is a peer dep of the durable execution SDK (used by
+    // the SDK to call CheckpointDurableExecution / GetDurableExecutionState APIs).
+    '@aws-sdk/client-lambda',
   ],
   description: 'Swim Meet CDK infrastructure including Cognito User Pool with Google federation',
-  // devDeps: [],             /* Build dependencies for this module. */
-  // packageName: undefined,  /* The "name" in package.json. */
+  devDeps: [
+    // aws-lambda types are a peer dependency of @aws/durable-execution-sdk-js
+    '@types/aws-lambda',
+  ],
 });
 
 // Copilot Setup Steps workflow — pre-installs Node, pnpm, project deps, uv/uvx,

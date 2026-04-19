@@ -7,12 +7,9 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as lambda_event_sources from 'aws-cdk-lib/aws-lambda-event-sources';
 import * as nodejs from 'aws-cdk-lib/aws-lambda-nodejs';
-import * as logs from 'aws-cdk-lib/aws-logs';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as sqs from 'aws-cdk-lib/aws-sqs';
 import * as ssm from 'aws-cdk-lib/aws-ssm';
-import * as sfn from 'aws-cdk-lib/aws-stepfunctions';
-import * as tasks from 'aws-cdk-lib/aws-stepfunctions-tasks';
 import { NagSuppressions } from 'cdk-nag';
 import { Construct } from 'constructs';
 import { StorageStack } from './storage-stack';
@@ -38,27 +35,31 @@ export interface ProcessingStackProps extends cdk.StackProps {
 }
 
 /**
- * ProcessingStack wires together the durable PDF-processing pipeline:
+ * ProcessingStack wires together the durable PDF-processing pipeline using
+ * **AWS Lambda Durable Functions** — no Step Functions state machine required.
  *
  *   S3 PDF upload
  *     → EventBridge "Object Created" rule
  *     → SQS queue (+ DLQ for failed deliveries)
- *     → ProcessingInitiator Lambda
- *     → Step Functions Standard Workflow  ← durable functions
- *         1. InitializeMeet
- *         2. ExtractWithBedrockAgent  ← Bedrock data analysis (Code Interpreter)
- *         3. ValidateExtraction
- *         4. StoreHeats
- *         5. UpdateMeetStatus (READY or FAILED on Catch)
+ *     → ProcessingInitiator Lambda      ← SQS trigger; async-invokes orchestrator
+ *     → Orchestrator Lambda             ← Lambda Durable Function (checkpointed)
+ *         step 1: initialize-meet       ← write MEET#META to DynamoDB
+ *         step 2: extract-heats         ← Bedrock Agent + Code Interpreter (data analysis)
+ *         step 3: validate-heats        ← schema validation
+ *         step 4: store-heats           ← DynamoDB BatchWriteItem + status=READY
+ *         (catch): update-status-failed ← status=FAILED
  *
- * The Bedrock Agent is configured with the AMAZON.CodeInterpreter built-in
- * action group, which gives it a sandboxed Python environment to parse PDF
- * bytes and produce structured JSON — this is Bedrock's native data-analysis
- * capability.
+ * The Orchestrator is a durable function — the Lambda Durable Execution service
+ * persists each completed step's result.  If the invocation is interrupted, the
+ * function resumes from the last checkpoint without re-running earlier steps.
+ *
+ * The Bedrock Agent is equipped with the AMAZON.CodeInterpreter built-in action
+ * group, giving it a sandboxed Python runtime to parse multi-column PDF layouts
+ * without any additional Lambda.
  */
 export class ProcessingStack extends cdk.Stack {
-  /** ARN of the Step Functions state machine (exported to SSM). */
-  public readonly stateMachineArn: string;
+  /** ARN of the durable Orchestrator Lambda (exported to SSM). */
+  public readonly orchestratorFunctionArn: string;
 
   /** Bedrock Agent ID (exported to SSM). */
   public readonly agentId: string;
@@ -79,6 +80,7 @@ export class ProcessingStack extends cdk.Stack {
       memorySize: 512,
       bundling: {
         // AWS SDK v3 is included in the Node.js 20+ Lambda runtime.
+        // @aws/durable-execution-sdk-js is NOT in @aws-sdk/* so it is bundled.
         externalModules: ['@aws-sdk/*'],
       },
       environment: {
@@ -216,38 +218,52 @@ export class ProcessingStack extends cdk.Stack {
     this.agentId = agent.attrAgentId;
     this.agentAliasId = agentAlias.attrAgentAliasId;
 
-    // ── Lambda: InitializeMeet ────────────────────────────────────────────────
-    const initializeMeetFn = new nodejs.NodejsFunction(this, 'InitializeMeetFn', {
+    // ── Lambda Durable Function: Orchestrator ─────────────────────────────────
+    //
+    // The Orchestrator is a single Lambda Durable Function that runs the entire
+    // PDF processing pipeline.  The AWS Lambda Durable Execution service:
+    //   • Persists the result of each context.step() to durable storage
+    //   • Re-invokes the function from the last checkpoint on interruption
+    //   • Provides at-least-once delivery of each step with configurable retry
+    //
+    // durableConfig enables durable execution on this function:
+    //   executionTimeout – max wall-clock time for the full workflow
+    //   retentionPeriod  – how long execution history is retained (for auditing)
+    const orchestratorFn = new nodejs.NodejsFunction(this, 'OrchestratorFn', {
       ...commonLambdaProps,
-      functionName: `swim-meet-initialize-${cdk.Stack.of(this).stackName}`,
-      entry: path.join(__dirname, 'lambda/initialize-meet.ts'),
+      functionName: `swim-meet-orchestrator-${cdk.Stack.of(this).stackName}`,
+      entry: path.join(__dirname, 'lambda/orchestrator.ts'),
       handler: 'handler',
-      description: 'Step Functions task: creates the MEET#META DynamoDB record',
-    });
-    initializeMeetFn.addToRolePolicy(
-      new iam.PolicyStatement({
-        actions: ['dynamodb:PutItem'],
-        resources: [props.tableArn],
-      }),
-    );
-
-    // ── Lambda: ExtractWithBedrock ────────────────────────────────────────────
-    const extractWithBedrockFn = new nodejs.NodejsFunction(this, 'ExtractWithBedrockFn', {
-      ...commonLambdaProps,
-      functionName: `swim-meet-extract-bedrock-${cdk.Stack.of(this).stackName}`,
-      entry: path.join(__dirname, 'lambda/extract-with-bedrock.ts'),
-      handler: 'handler',
-      description: 'Step Functions task: invokes Bedrock Agent (Code Interpreter) to extract heat data',
-      timeout: cdk.Duration.minutes(15), // PDF extraction can take several minutes
+      description: 'Durable orchestrator: runs the full PDF heat sheet extraction pipeline with automatic checkpointing',
+      timeout: cdk.Duration.minutes(15), // per-invocation timeout (Lambda max)
       memorySize: 1024,
+      durableConfig: {
+        // Total wall-clock budget for the entire workflow across all invocations.
+        // Complex multi-page PDFs with Bedrock extraction can take up to 30 minutes.
+        executionTimeout: cdk.Duration.hours(1),
+        // Keep execution history for 14 days — useful for debugging failed extractions.
+        retentionPeriod: cdk.Duration.days(14),
+      },
       environment: {
         ...commonLambdaProps.environment,
         AGENT_ID: agent.attrAgentId,
         AGENT_ALIAS_ID: agentAlias.attrAgentAliasId,
       },
     });
-    props.rawPdfBucket.grantRead(extractWithBedrockFn);
-    extractWithBedrockFn.addToRolePolicy(
+
+    // Grant S3 read access for the raw PDF bucket
+    props.rawPdfBucket.grantRead(orchestratorFn);
+
+    // Grant DynamoDB read/write for pipeline steps
+    orchestratorFn.addToRolePolicy(
+      new iam.PolicyStatement({
+        actions: ['dynamodb:PutItem', 'dynamodb:BatchWriteItem', 'dynamodb:UpdateItem'],
+        resources: [props.tableArn],
+      }),
+    );
+
+    // Grant Bedrock Agent invocation
+    orchestratorFn.addToRolePolicy(
       new iam.PolicyStatement({
         actions: [
           'bedrock:InvokeAgent',
@@ -260,151 +276,27 @@ export class ProcessingStack extends cdk.Stack {
       }),
     );
 
-    // ── Lambda: ValidateExtraction ────────────────────────────────────────────
-    const validateExtractionFn = new nodejs.NodejsFunction(this, 'ValidateExtractionFn', {
-      ...commonLambdaProps,
-      functionName: `swim-meet-validate-${cdk.Stack.of(this).stackName}`,
-      entry: path.join(__dirname, 'lambda/validate-extraction.ts'),
-      handler: 'handler',
-      description: 'Step Functions task: validates extracted heat JSON schema',
-    });
-
-    // ── Lambda: StoreHeats ────────────────────────────────────────────────────
-    const storeHeatsFn = new nodejs.NodejsFunction(this, 'StoreHeatsFn', {
-      ...commonLambdaProps,
-      functionName: `swim-meet-store-heats-${cdk.Stack.of(this).stackName}`,
-      entry: path.join(__dirname, 'lambda/store-heats.ts'),
-      handler: 'handler',
-      description: 'Step Functions task: batch-writes heats to DynamoDB',
-    });
-    storeHeatsFn.addToRolePolicy(
+    // Grant the orchestrator permission to call the Lambda Durable Execution APIs
+    // on itself.  The SDK calls these to checkpoint step results and retrieve state
+    // on re-invocation.  We use a wildcard on the function name prefix so that
+    // CDK does not create a circular dependency (policy → function → policy).
+    orchestratorFn.addToRolePolicy(
       new iam.PolicyStatement({
-        actions: ['dynamodb:BatchWriteItem', 'dynamodb:UpdateItem'],
-        resources: [props.tableArn],
+        actions: [
+          'lambda:GetDurableExecution',
+          'lambda:GetDurableExecutionState',
+          'lambda:CheckpointDurableExecution',
+          'lambda:InvokeFunction', // required for durable re-invocation
+        ],
+        // Scoped to the orchestrator function name prefix in this account/region.
+        // Using Aws pseudo-parameters avoids a circular CloudFormation dependency.
+        resources: [
+          `arn:${cdk.Aws.PARTITION}:lambda:${region}:${cdk.Stack.of(this).account}:function:swim-meet-orchestrator-*`,
+        ],
       }),
     );
 
-    // ── Lambda: UpdateMeetStatus ──────────────────────────────────────────────
-    const updateMeetStatusFn = new nodejs.NodejsFunction(this, 'UpdateMeetStatusFn', {
-      ...commonLambdaProps,
-      functionName: `swim-meet-update-status-${cdk.Stack.of(this).stackName}`,
-      entry: path.join(__dirname, 'lambda/update-meet-status.ts'),
-      handler: 'handler',
-      description: 'Step Functions task: updates processingStatus on the META record',
-    });
-    updateMeetStatusFn.addToRolePolicy(
-      new iam.PolicyStatement({
-        actions: ['dynamodb:UpdateItem'],
-        resources: [props.tableArn],
-      }),
-    );
-
-    // ── Step Functions — Durable Processing Pipeline ──────────────────────────
-    //
-    // Standard Workflow provides durable, stateful execution:
-    //   • State is persisted between steps — Lambda restarts don't lose progress
-    //   • Built-in retry with exponential back-off on transient failures
-    //   • Execution history retained for 90 days for auditing / debugging
-    //   • Error Catch routes failed executions to UpdateMeetStatus(FAILED)
-    //
-    const sfnLogGroup = new logs.LogGroup(this, 'StateMachineLogGroup', {
-      logGroupName: `/aws/states/swim-meet-processing-${cdk.Stack.of(this).stackName}`,
-      retention: logs.RetentionDays.ONE_MONTH,
-      removalPolicy: cdk.RemovalPolicy.DESTROY,
-    });
-
-    // Step 1: Initialize meet record
-    const initStep = new tasks.LambdaInvoke(this, 'InitializeMeet', {
-      lambdaFunction: initializeMeetFn,
-      outputPath: '$.Payload',
-      comment: 'Create MEET#META record with processingStatus=PROCESSING',
-    });
-
-    // Step 2: Extract heats with Bedrock Agent (data analysis / Code Interpreter)
-    const extractStep = new tasks.LambdaInvoke(this, 'ExtractWithBedrockAgent', {
-      lambdaFunction: extractWithBedrockFn,
-      outputPath: '$.Payload',
-      comment: 'Invoke Bedrock Agent with Code Interpreter to parse PDF and extract heats',
-      // Generous timeout — complex multi-page PDFs may take several minutes
-      taskTimeout: sfn.Timeout.duration(cdk.Duration.minutes(20)),
-      retryOnServiceExceptions: true,
-    });
-    // Retry on transient Bedrock throttling
-    extractStep.addRetry({
-      errors: ['ThrottlingException', 'ServiceUnavailableException'],
-      maxAttempts: 3,
-      backoffRate: 2,
-      interval: cdk.Duration.seconds(30),
-    });
-
-    // Step 3: Validate extracted JSON
-    const validateStep = new tasks.LambdaInvoke(this, 'ValidateExtraction', {
-      lambdaFunction: validateExtractionFn,
-      outputPath: '$.Payload',
-      comment: 'Validate extracted heats against canonical schema',
-    });
-
-    // Step 4: Store heats in DynamoDB
-    const storeStep = new tasks.LambdaInvoke(this, 'StoreHeats', {
-      lambdaFunction: storeHeatsFn,
-      outputPath: '$.Payload',
-      comment: 'Batch-write heats to DynamoDB and update META to READY',
-    });
-
-    // Step 5a: Update status to READY (terminal success)
-    const updateReadyStep = new tasks.LambdaInvoke(this, 'UpdateStatusReady', {
-      lambdaFunction: updateMeetStatusFn,
-      payload: sfn.TaskInput.fromObject({
-        'meetId.$': '$.meetId',
-        'targetStatus': 'READY',
-      }),
-      outputPath: '$.Payload',
-      comment: 'Mark meet as READY',
-    });
-
-    // Step 5b: Update status to FAILED (error Catch)
-    const updateFailedStep = new tasks.LambdaInvoke(this, 'UpdateStatusFailed', {
-      lambdaFunction: updateMeetStatusFn,
-      payload: sfn.TaskInput.fromObject({
-        'meetId.$': '$$.Execution.Input.meetId',
-        'targetStatus': 'FAILED',
-        'Cause.$': '$.Cause',
-        'Error.$': '$.Error',
-      }),
-      outputPath: '$.Payload',
-      comment: 'Mark meet as FAILED and record error details',
-    });
-
-    // Wire the happy path
-    const definition = initStep
-      .next(extractStep)
-      .next(validateStep)
-      .next(storeStep)
-      .next(updateReadyStep);
-
-    // Catch any unhandled error anywhere in the chain → UpdateStatusFailed
-    [initStep, extractStep, validateStep, storeStep].forEach(step => {
-      step.addCatch(updateFailedStep, {
-        errors: ['States.ALL'],
-        resultPath: '$',
-      });
-    });
-
-    const stateMachine = new sfn.StateMachine(this, 'HeatSheetProcessing', {
-      stateMachineName: `swim-meet-processing-${cdk.Stack.of(this).stackName}`,
-      definitionBody: sfn.DefinitionBody.fromChainable(definition),
-      // STANDARD = durable (checkpointed) execution — persists state across steps
-      stateMachineType: sfn.StateMachineType.STANDARD,
-      timeout: cdk.Duration.hours(1),
-      logs: {
-        destination: sfnLogGroup,
-        level: sfn.LogLevel.ERROR,
-        includeExecutionData: false,
-      },
-      tracingEnabled: true,
-    });
-
-    this.stateMachineArn = stateMachine.stateMachineArn;
+    this.orchestratorFunctionArn = orchestratorFn.functionArn;
 
     // ── Lambda: ProcessingInitiator (SQS trigger) ─────────────────────────────
     const processingInitiatorFn = new nodejs.NodejsFunction(this, 'ProcessingInitiatorFn', {
@@ -412,13 +304,15 @@ export class ProcessingStack extends cdk.Stack {
       functionName: `swim-meet-initiator-${cdk.Stack.of(this).stackName}`,
       entry: path.join(__dirname, 'lambda/processing-initiator.ts'),
       handler: 'handler',
-      description: 'Reads SQS messages from S3/EventBridge and starts Step Functions executions',
+      description: 'Reads SQS messages from S3/EventBridge and async-invokes the durable Orchestrator Lambda',
       environment: {
         ...commonLambdaProps.environment,
-        STATE_MACHINE_ARN: stateMachine.stateMachineArn,
+        ORCHESTRATOR_ARN: orchestratorFn.functionArn,
       },
     });
-    stateMachine.grantStartExecution(processingInitiatorFn);
+
+    // Allow initiator to async-invoke the orchestrator
+    orchestratorFn.grantInvoke(processingInitiatorFn);
 
     processingInitiatorFn.addEventSource(
       new lambda_event_sources.SqsEventSource(queue, {
@@ -428,10 +322,10 @@ export class ProcessingStack extends cdk.Stack {
     );
 
     // ── SSM Exports ───────────────────────────────────────────────────────────
-    new ssm.StringParameter(this, 'StateMachineArnParam', {
-      parameterName: `${props.ssmPrefix}/processing/state-machine-arn`,
-      description: 'Step Functions state machine ARN for heat sheet processing',
-      stringValue: stateMachine.stateMachineArn,
+    new ssm.StringParameter(this, 'OrchestratorArnParam', {
+      parameterName: `${props.ssmPrefix}/processing/orchestrator-function-arn`,
+      description: 'Durable Orchestrator Lambda ARN for the heat sheet processing pipeline',
+      stringValue: orchestratorFn.functionArn,
     });
 
     new ssm.StringParameter(this, 'AgentIdParam', {
@@ -448,6 +342,21 @@ export class ProcessingStack extends cdk.Stack {
 
     // ── CDK Nag suppressions ─────────────────────────────────────────────────
     NagSuppressions.addResourceSuppressions(
+      orchestratorFn,
+      [
+        {
+          id: 'AwsSolutions-IAM4',
+          reason: 'AWSLambdaBasicExecutionRole is the minimal managed policy for Lambda CloudWatch logging.',
+        },
+        {
+          id: 'AwsSolutions-IAM5',
+          reason: 'S3 read grant scoped to the raw-PDF bucket by CDK; Bedrock grant scoped to this agent/alias; durable execution grant scoped to this function ARN.',
+        },
+      ],
+      true,
+    );
+
+    NagSuppressions.addResourceSuppressions(
       processingInitiatorFn,
       [
         {
@@ -456,54 +365,12 @@ export class ProcessingStack extends cdk.Stack {
         },
         {
           id: 'AwsSolutions-IAM5',
-          reason: 'Lambda execution role wildcards are scoped to the state machine and SQS queue arns by CDK grants.',
+          reason: 'Lambda invoke grant scoped to the orchestrator function ARN by CDK.',
         },
       ],
       true,
     );
 
-    NagSuppressions.addResourceSuppressions(
-      initializeMeetFn,
-      [{ id: 'AwsSolutions-IAM4', reason: 'AWSLambdaBasicExecutionRole for CloudWatch logging.' }],
-      true,
-    );
-    NagSuppressions.addResourceSuppressions(
-      extractWithBedrockFn,
-      [
-        { id: 'AwsSolutions-IAM4', reason: 'AWSLambdaBasicExecutionRole for CloudWatch logging.' },
-        { id: 'AwsSolutions-IAM5', reason: 'S3 read grant scoped to the raw-PDF bucket by CDK.' },
-      ],
-      true,
-    );
-    NagSuppressions.addResourceSuppressions(
-      validateExtractionFn,
-      [{ id: 'AwsSolutions-IAM4', reason: 'AWSLambdaBasicExecutionRole for CloudWatch logging.' }],
-      true,
-    );
-    NagSuppressions.addResourceSuppressions(
-      storeHeatsFn,
-      [{ id: 'AwsSolutions-IAM4', reason: 'AWSLambdaBasicExecutionRole for CloudWatch logging.' }],
-      true,
-    );
-    NagSuppressions.addResourceSuppressions(
-      updateMeetStatusFn,
-      [{ id: 'AwsSolutions-IAM4', reason: 'AWSLambdaBasicExecutionRole for CloudWatch logging.' }],
-      true,
-    );
-    NagSuppressions.addResourceSuppressions(
-      stateMachine,
-      [
-        {
-          id: 'AwsSolutions-SF1',
-          reason: 'Logging is enabled at ERROR level; ALL-level logging can be enabled in production hardening.',
-        },
-        {
-          id: 'AwsSolutions-IAM5',
-          reason: 'Step Functions execution role wildcards scoped to Lambda functions by CDK grants.',
-        },
-      ],
-      true,
-    );
     NagSuppressions.addResourceSuppressions(agentRole, [
       {
         id: 'AwsSolutions-IAM5',

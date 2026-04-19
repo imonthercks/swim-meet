@@ -5,20 +5,24 @@
  * events.  For each PDF uploaded to the raw-PDF bucket this function:
  *   1. Extracts the bucket name, object key, and a derived meetId from the
  *      S3 event detail embedded in the EventBridge / SQS message.
- *   2. Starts one Step Functions Standard Workflow execution per PDF so that
- *      the durable processing pipeline takes over.
+ *   2. Asynchronously invokes the Orchestrator Lambda (a Lambda Durable Function)
+ *      which handles the end-to-end PDF processing pipeline with automatic
+ *      checkpointing and retry.
+ *
+ * Using async invocation (InvocationType: 'Event') means this function returns
+ * immediately while the durable orchestrator runs independently.
  *
  * Environment variables expected at runtime:
- *   STATE_MACHINE_ARN – ARN of the HeatSheetProcessing state machine.
+ *   ORCHESTRATOR_ARN – ARN of the durable Orchestrator Lambda function.
  */
 
 import {
-  SFNClient,
-  StartExecutionCommand,
-} from '@aws-sdk/client-sfn';
+  InvokeCommand,
+  LambdaClient,
+} from '@aws-sdk/client-lambda';
 
-const sfn = new SFNClient({});
-const STATE_MACHINE_ARN = process.env.STATE_MACHINE_ARN!;
+const lambda = new LambdaClient({});
+const ORCHESTRATOR_ARN = process.env.ORCHESTRATOR_ARN!;
 
 interface S3EventDetail {
   bucket: { name: string };
@@ -64,22 +68,23 @@ export async function handler(event: SQSEvent): Promise<void> {
     const { bucket, object } = ebEvent.detail;
     const meetId = meetIdFromKey(object.key);
 
-    const input = JSON.stringify({
+    const payload = JSON.stringify({
       meetId,
       s3Bucket: bucket.name,
       s3Key: object.key,
     });
 
-    const executionName = `${meetId}-${Date.now()}`;
-
-    await sfn.send(
-      new StartExecutionCommand({
-        stateMachineArn: STATE_MACHINE_ARN,
-        name: executionName,
-        input,
+    // Async invocation — returns immediately; the Orchestrator Lambda runs
+    // as a durable function and handles its own checkpointing and retries.
+    await lambda.send(
+      new InvokeCommand({
+        FunctionName: ORCHESTRATOR_ARN,
+        InvocationType: 'Event', // async — fire and forget
+        Payload: Buffer.from(payload),
       }),
     );
 
-    console.log(`Started execution ${executionName} for meet ${meetId} (s3://${bucket.name}/${object.key})`);
+    console.log(`Triggered durable orchestrator for meet ${meetId} (s3://${bucket.name}/${object.key})`);
   }
 }
+

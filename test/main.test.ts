@@ -232,16 +232,39 @@ test('ProcessingStack creates a Bedrock Agent Alias', () => {
   });
 });
 
-test('ProcessingStack creates a Step Functions Standard Workflow (durable)', () => {
+test('ProcessingStack creates a Lambda Durable Function (Orchestrator) with durableConfig', () => {
   const app = new cdk.App();
   const stage = buildTestStage(app);
   const template = Template.fromStack(stage.processingStack);
 
-  template.resourceCountIs('AWS::StepFunctions::StateMachine', 1);
-  template.hasResourceProperties('AWS::StepFunctions::StateMachine', {
-    StateMachineType: 'STANDARD',
-    TracingConfiguration: { Enabled: true },
-  });
+  // Verify durableConfig is present on exactly one function (the orchestrator)
+  const fns = template.findResources('AWS::Lambda::Function');
+  const orchestrators = Object.values(fns).filter(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (fn: any) => typeof fn.Properties?.DurableConfig === 'object',
+  );
+  expect(orchestrators.length).toBe(1);
+
+  // Durable execution timeout = 1 hour (3600 seconds)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const cfg = (orchestrators[0] as any).Properties.DurableConfig;
+  expect(cfg.ExecutionTimeout).toBe(3600);
+  // Retention period = 14 days
+  expect(cfg.RetentionPeriodInDays).toBe(14);
+
+  // Function name must contain 'swim-meet-orchestrator'
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const name = (orchestrators[0] as any).Properties.FunctionName as string;
+  expect(name).toContain('swim-meet-orchestrator');
+});
+
+test('ProcessingStack does NOT create a Step Functions state machine', () => {
+  const app = new cdk.App();
+  const stage = buildTestStage(app);
+  const template = Template.fromStack(stage.processingStack);
+
+  // No Step Functions resources — orchestration lives in the durable Lambda.
+  template.resourceCountIs('AWS::StepFunctions::StateMachine', 0);
 });
 
 test('ProcessingStack creates two SQS queues (main + DLQ)', () => {
@@ -252,15 +275,15 @@ test('ProcessingStack creates two SQS queues (main + DLQ)', () => {
   template.resourceCountIs('AWS::SQS::Queue', 2);
 });
 
-test('ProcessingStack creates five Lambda functions for Step Functions tasks + initiator', () => {
+test('ProcessingStack creates two Lambda functions: Orchestrator (durable) + ProcessingInitiator', () => {
   const app = new cdk.App();
   const stage = buildTestStage(app);
   const template = Template.fromStack(stage.processingStack);
 
-  // InitializeMeet, ExtractWithBedrock, ValidateExtraction, StoreHeats,
-  // UpdateMeetStatus, ProcessingInitiator = 6 functions
+  // Orchestrator Lambda + ProcessingInitiator Lambda (CDK may add log-retention
+  // custom resource Lambdas, so use >= 2).
   const functions = template.findResources('AWS::Lambda::Function');
-  expect(Object.keys(functions).length).toBeGreaterThanOrEqual(6);
+  expect(Object.keys(functions).length).toBeGreaterThanOrEqual(2);
 });
 
 test('ProcessingStack creates an EventBridge rule targeting the SQS queue', () => {

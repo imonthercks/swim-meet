@@ -1544,221 +1544,6 @@ exports[`ProcessingStack snapshot 1`] = `
       },
       "Type": "AWS::IAM::Role",
     },
-    "ExtractWithBedrockFn5C576CE4": {
-      "DependsOn": [
-        "ExtractWithBedrockFnServiceRoleDefaultPolicyCBB106D2",
-        "ExtractWithBedrockFnServiceRole471906F1",
-      ],
-      "Metadata": {
-        "cdk_nag": {
-          "rules_to_suppress": [
-            {
-              "id": "AwsSolutions-IAM4",
-              "reason": "AWSLambdaBasicExecutionRole for CloudWatch logging.",
-            },
-            {
-              "id": "AwsSolutions-IAM5",
-              "reason": "S3 read grant scoped to the raw-PDF bucket by CDK.",
-            },
-          ],
-        },
-      },
-      "Properties": {
-        "Architectures": [
-          "arm64",
-        ],
-        "Code": {
-          "S3Bucket": "cdk-hnb659fds-assets-123456789012-us-east-1",
-          "S3Key": "0c57458363fa1d8ee46e074d69496b09ca835b964817edcd85133c6d8930e880.zip",
-        },
-        "Description": "Step Functions task: invokes Bedrock Agent (Code Interpreter) to extract heat data",
-        "Environment": {
-          "Variables": {
-            "AGENT_ALIAS_ID": {
-              "Fn::GetAtt": [
-                "HeatSheetAgentAlias",
-                "AgentAliasId",
-              ],
-            },
-            "AGENT_ID": {
-              "Fn::GetAtt": [
-                "HeatSheetAgent",
-                "AgentId",
-              ],
-            },
-            "NODE_OPTIONS": "--enable-source-maps",
-            "TABLE_NAME": {
-              "Fn::ImportValue": "TestStage-StorageStack:ExportsOutputRefMeetsTable194C39082FACE429",
-            },
-          },
-        },
-        "FunctionName": "swim-meet-extract-bedrock-TestStage-ProcessingStack",
-        "Handler": "index.handler",
-        "MemorySize": 1024,
-        "Role": {
-          "Fn::GetAtt": [
-            "ExtractWithBedrockFnServiceRole471906F1",
-            "Arn",
-          ],
-        },
-        "Runtime": "nodejs22.x",
-        "Timeout": 900,
-      },
-      "Type": "AWS::Lambda::Function",
-    },
-    "ExtractWithBedrockFnServiceRole471906F1": {
-      "Metadata": {
-        "cdk_nag": {
-          "rules_to_suppress": [
-            {
-              "id": "AwsSolutions-IAM4",
-              "reason": "AWSLambdaBasicExecutionRole for CloudWatch logging.",
-            },
-            {
-              "id": "AwsSolutions-IAM5",
-              "reason": "S3 read grant scoped to the raw-PDF bucket by CDK.",
-            },
-          ],
-        },
-      },
-      "Properties": {
-        "AssumeRolePolicyDocument": {
-          "Statement": [
-            {
-              "Action": "sts:AssumeRole",
-              "Effect": "Allow",
-              "Principal": {
-                "Service": "lambda.amazonaws.com",
-              },
-            },
-          ],
-          "Version": "2012-10-17",
-        },
-        "ManagedPolicyArns": [
-          {
-            "Fn::Join": [
-              "",
-              [
-                "arn:",
-                {
-                  "Ref": "AWS::Partition",
-                },
-                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
-              ],
-            ],
-          },
-        ],
-      },
-      "Type": "AWS::IAM::Role",
-    },
-    "ExtractWithBedrockFnServiceRoleDefaultPolicyCBB106D2": {
-      "Metadata": {
-        "cdk_nag": {
-          "rules_to_suppress": [
-            {
-              "id": "AwsSolutions-IAM4",
-              "reason": "AWSLambdaBasicExecutionRole for CloudWatch logging.",
-            },
-            {
-              "id": "AwsSolutions-IAM5",
-              "reason": "S3 read grant scoped to the raw-PDF bucket by CDK.",
-            },
-          ],
-        },
-      },
-      "Properties": {
-        "PolicyDocument": {
-          "Statement": [
-            {
-              "Action": [
-                "s3:GetObject*",
-                "s3:GetBucket*",
-                "s3:List*",
-              ],
-              "Effect": "Allow",
-              "Resource": [
-                {
-                  "Fn::ImportValue": "TestStage-StorageStack:ExportsOutputFnGetAttRawPdfBucket6B2950B2Arn1CBAE423",
-                },
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      {
-                        "Fn::ImportValue": "TestStage-StorageStack:ExportsOutputFnGetAttRawPdfBucket6B2950B2Arn1CBAE423",
-                      },
-                      "/*",
-                    ],
-                  ],
-                },
-              ],
-            },
-            {
-              "Action": [
-                "kms:Decrypt",
-                "kms:DescribeKey",
-              ],
-              "Effect": "Allow",
-              "Resource": {
-                "Fn::ImportValue": "TestStage-StorageStack:ExportsOutputFnGetAttEncryptionKey1B843E66Arn91172964",
-              },
-            },
-            {
-              "Action": [
-                "bedrock:InvokeAgent",
-                "bedrock:InvokeInlineAgent",
-              ],
-              "Effect": "Allow",
-              "Resource": [
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:bedrock:us-east-1:123456789012:agent/",
-                      {
-                        "Fn::GetAtt": [
-                          "HeatSheetAgent",
-                          "AgentId",
-                        ],
-                      },
-                    ],
-                  ],
-                },
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:bedrock:us-east-1:123456789012:agent-alias/",
-                      {
-                        "Fn::GetAtt": [
-                          "HeatSheetAgent",
-                          "AgentId",
-                        ],
-                      },
-                      "/",
-                      {
-                        "Fn::GetAtt": [
-                          "HeatSheetAgentAlias",
-                          "AgentAliasId",
-                        ],
-                      },
-                    ],
-                  ],
-                },
-              ],
-            },
-          ],
-          "Version": "2012-10-17",
-        },
-        "PolicyName": "ExtractWithBedrockFnServiceRoleDefaultPolicyCBB106D2",
-        "Roles": [
-          {
-            "Ref": "ExtractWithBedrockFnServiceRole471906F1",
-          },
-        ],
-      },
-      "Type": "AWS::IAM::Policy",
-    },
     "HeatSheetAgent": {
       "Properties": {
         "ActionGroups": [
@@ -1829,358 +1614,35 @@ Seed times prefixed with "X" are exhibition — keep the X prefix.
       },
       "Type": "AWS::Bedrock::AgentAlias",
     },
-    "HeatSheetProcessingB66DCE4D": {
-      "DeletionPolicy": "Delete",
-      "DependsOn": [
-        "HeatSheetProcessingRoleDefaultPolicy78D974D4",
-        "HeatSheetProcessingRole6DAC497F",
-      ],
-      "Metadata": {
-        "cdk_nag": {
-          "rules_to_suppress": [
-            {
-              "id": "AwsSolutions-SF1",
-              "reason": "Logging is enabled at ERROR level; ALL-level logging can be enabled in production hardening.",
-            },
-            {
-              "id": "AwsSolutions-IAM5",
-              "reason": "Step Functions execution role wildcards scoped to Lambda functions by CDK grants.",
-            },
-          ],
-        },
-      },
+    "OrchestratorArnParamF02968FE": {
       "Properties": {
-        "DefinitionString": {
-          "Fn::Join": [
-            "",
-            [
-              "{"StartAt":"InitializeMeet","States":{"InitializeMeet":{"Next":"ExtractWithBedrockAgent","Retry":[{"ErrorEquals":["Lambda.ClientExecutionTimeoutException","Lambda.ServiceException","Lambda.AWSLambdaException","Lambda.SdkClientException"],"IntervalSeconds":2,"MaxAttempts":6,"BackoffRate":2}],"Catch":[{"ErrorEquals":["States.ALL"],"ResultPath":"$","Next":"UpdateStatusFailed"}],"Type":"Task","Comment":"Create MEET#META record with processingStatus=PROCESSING","OutputPath":"$.Payload","Resource":"arn:",
-              {
-                "Ref": "AWS::Partition",
-              },
-              ":states:::lambda:invoke","Parameters":{"FunctionName":"",
-              {
-                "Fn::GetAtt": [
-                  "InitializeMeetFn1B1064EF",
-                  "Arn",
-                ],
-              },
-              "","Payload.$":"$"}},"ExtractWithBedrockAgent":{"Next":"ValidateExtraction","Retry":[{"ErrorEquals":["Lambda.ClientExecutionTimeoutException","Lambda.ServiceException","Lambda.AWSLambdaException","Lambda.SdkClientException"],"IntervalSeconds":2,"MaxAttempts":6,"BackoffRate":2},{"ErrorEquals":["ThrottlingException","ServiceUnavailableException"],"IntervalSeconds":30,"MaxAttempts":3,"BackoffRate":2}],"Catch":[{"ErrorEquals":["States.ALL"],"ResultPath":"$","Next":"UpdateStatusFailed"}],"Type":"Task","Comment":"Invoke Bedrock Agent with Code Interpreter to parse PDF and extract heats","TimeoutSeconds":1200,"OutputPath":"$.Payload","Resource":"arn:",
-              {
-                "Ref": "AWS::Partition",
-              },
-              ":states:::lambda:invoke","Parameters":{"FunctionName":"",
-              {
-                "Fn::GetAtt": [
-                  "ExtractWithBedrockFn5C576CE4",
-                  "Arn",
-                ],
-              },
-              "","Payload.$":"$"}},"ValidateExtraction":{"Next":"StoreHeats","Retry":[{"ErrorEquals":["Lambda.ClientExecutionTimeoutException","Lambda.ServiceException","Lambda.AWSLambdaException","Lambda.SdkClientException"],"IntervalSeconds":2,"MaxAttempts":6,"BackoffRate":2}],"Catch":[{"ErrorEquals":["States.ALL"],"ResultPath":"$","Next":"UpdateStatusFailed"}],"Type":"Task","Comment":"Validate extracted heats against canonical schema","OutputPath":"$.Payload","Resource":"arn:",
-              {
-                "Ref": "AWS::Partition",
-              },
-              ":states:::lambda:invoke","Parameters":{"FunctionName":"",
-              {
-                "Fn::GetAtt": [
-                  "ValidateExtractionFn4CD1344B",
-                  "Arn",
-                ],
-              },
-              "","Payload.$":"$"}},"StoreHeats":{"Next":"UpdateStatusReady","Retry":[{"ErrorEquals":["Lambda.ClientExecutionTimeoutException","Lambda.ServiceException","Lambda.AWSLambdaException","Lambda.SdkClientException"],"IntervalSeconds":2,"MaxAttempts":6,"BackoffRate":2}],"Catch":[{"ErrorEquals":["States.ALL"],"ResultPath":"$","Next":"UpdateStatusFailed"}],"Type":"Task","Comment":"Batch-write heats to DynamoDB and update META to READY","OutputPath":"$.Payload","Resource":"arn:",
-              {
-                "Ref": "AWS::Partition",
-              },
-              ":states:::lambda:invoke","Parameters":{"FunctionName":"",
-              {
-                "Fn::GetAtt": [
-                  "StoreHeatsFnCDAD62C9",
-                  "Arn",
-                ],
-              },
-              "","Payload.$":"$"}},"UpdateStatusReady":{"End":true,"Retry":[{"ErrorEquals":["Lambda.ClientExecutionTimeoutException","Lambda.ServiceException","Lambda.AWSLambdaException","Lambda.SdkClientException"],"IntervalSeconds":2,"MaxAttempts":6,"BackoffRate":2}],"Type":"Task","Comment":"Mark meet as READY","OutputPath":"$.Payload","Resource":"arn:",
-              {
-                "Ref": "AWS::Partition",
-              },
-              ":states:::lambda:invoke","Parameters":{"FunctionName":"",
-              {
-                "Fn::GetAtt": [
-                  "UpdateMeetStatusFn964CD653",
-                  "Arn",
-                ],
-              },
-              "","Payload":{"meetId.$":"$.meetId","targetStatus":"READY"}}},"UpdateStatusFailed":{"End":true,"Retry":[{"ErrorEquals":["Lambda.ClientExecutionTimeoutException","Lambda.ServiceException","Lambda.AWSLambdaException","Lambda.SdkClientException"],"IntervalSeconds":2,"MaxAttempts":6,"BackoffRate":2}],"Type":"Task","Comment":"Mark meet as FAILED and record error details","OutputPath":"$.Payload","Resource":"arn:",
-              {
-                "Ref": "AWS::Partition",
-              },
-              ":states:::lambda:invoke","Parameters":{"FunctionName":"",
-              {
-                "Fn::GetAtt": [
-                  "UpdateMeetStatusFn964CD653",
-                  "Arn",
-                ],
-              },
-              "","Payload":{"meetId.$":"$$.Execution.Input.meetId","targetStatus":"FAILED","Cause.$":"$.Cause","Error.$":"$.Error"}}}},"TimeoutSeconds":3600}",
-            ],
-          ],
-        },
-        "LoggingConfiguration": {
-          "Destinations": [
-            {
-              "CloudWatchLogsLogGroup": {
-                "LogGroupArn": {
-                  "Fn::GetAtt": [
-                    "StateMachineLogGroup15B91BCB",
-                    "Arn",
-                  ],
-                },
-              },
-            },
-          ],
-          "IncludeExecutionData": false,
-          "Level": "ERROR",
-        },
-        "RoleArn": {
+        "Description": "Durable Orchestrator Lambda ARN for the heat sheet processing pipeline",
+        "Name": "/swim-meet/test/processing/orchestrator-function-arn",
+        "Type": "String",
+        "Value": {
           "Fn::GetAtt": [
-            "HeatSheetProcessingRole6DAC497F",
+            "OrchestratorFn6F7CE538",
             "Arn",
           ],
         },
-        "StateMachineName": "swim-meet-processing-TestStage-ProcessingStack",
-        "StateMachineType": "STANDARD",
-        "TracingConfiguration": {
-          "Enabled": true,
-        },
       },
-      "Type": "AWS::StepFunctions::StateMachine",
-      "UpdateReplacePolicy": "Delete",
+      "Type": "AWS::SSM::Parameter",
     },
-    "HeatSheetProcessingRole6DAC497F": {
-      "Metadata": {
-        "cdk_nag": {
-          "rules_to_suppress": [
-            {
-              "id": "AwsSolutions-SF1",
-              "reason": "Logging is enabled at ERROR level; ALL-level logging can be enabled in production hardening.",
-            },
-            {
-              "id": "AwsSolutions-IAM5",
-              "reason": "Step Functions execution role wildcards scoped to Lambda functions by CDK grants.",
-            },
-          ],
-        },
-      },
-      "Properties": {
-        "AssumeRolePolicyDocument": {
-          "Statement": [
-            {
-              "Action": "sts:AssumeRole",
-              "Effect": "Allow",
-              "Principal": {
-                "Service": "states.amazonaws.com",
-              },
-            },
-          ],
-          "Version": "2012-10-17",
-        },
-      },
-      "Type": "AWS::IAM::Role",
-    },
-    "HeatSheetProcessingRoleDefaultPolicy78D974D4": {
-      "Metadata": {
-        "cdk_nag": {
-          "rules_to_suppress": [
-            {
-              "id": "AwsSolutions-SF1",
-              "reason": "Logging is enabled at ERROR level; ALL-level logging can be enabled in production hardening.",
-            },
-            {
-              "id": "AwsSolutions-IAM5",
-              "reason": "Step Functions execution role wildcards scoped to Lambda functions by CDK grants.",
-            },
-          ],
-        },
-      },
-      "Properties": {
-        "PolicyDocument": {
-          "Statement": [
-            {
-              "Action": "lambda:InvokeFunction",
-              "Effect": "Allow",
-              "Resource": [
-                {
-                  "Fn::GetAtt": [
-                    "InitializeMeetFn1B1064EF",
-                    "Arn",
-                  ],
-                },
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      {
-                        "Fn::GetAtt": [
-                          "InitializeMeetFn1B1064EF",
-                          "Arn",
-                        ],
-                      },
-                      ":*",
-                    ],
-                  ],
-                },
-              ],
-            },
-            {
-              "Action": "lambda:InvokeFunction",
-              "Effect": "Allow",
-              "Resource": [
-                {
-                  "Fn::GetAtt": [
-                    "ExtractWithBedrockFn5C576CE4",
-                    "Arn",
-                  ],
-                },
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      {
-                        "Fn::GetAtt": [
-                          "ExtractWithBedrockFn5C576CE4",
-                          "Arn",
-                        ],
-                      },
-                      ":*",
-                    ],
-                  ],
-                },
-              ],
-            },
-            {
-              "Action": "lambda:InvokeFunction",
-              "Effect": "Allow",
-              "Resource": [
-                {
-                  "Fn::GetAtt": [
-                    "ValidateExtractionFn4CD1344B",
-                    "Arn",
-                  ],
-                },
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      {
-                        "Fn::GetAtt": [
-                          "ValidateExtractionFn4CD1344B",
-                          "Arn",
-                        ],
-                      },
-                      ":*",
-                    ],
-                  ],
-                },
-              ],
-            },
-            {
-              "Action": "lambda:InvokeFunction",
-              "Effect": "Allow",
-              "Resource": [
-                {
-                  "Fn::GetAtt": [
-                    "StoreHeatsFnCDAD62C9",
-                    "Arn",
-                  ],
-                },
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      {
-                        "Fn::GetAtt": [
-                          "StoreHeatsFnCDAD62C9",
-                          "Arn",
-                        ],
-                      },
-                      ":*",
-                    ],
-                  ],
-                },
-              ],
-            },
-            {
-              "Action": "lambda:InvokeFunction",
-              "Effect": "Allow",
-              "Resource": [
-                {
-                  "Fn::GetAtt": [
-                    "UpdateMeetStatusFn964CD653",
-                    "Arn",
-                  ],
-                },
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      {
-                        "Fn::GetAtt": [
-                          "UpdateMeetStatusFn964CD653",
-                          "Arn",
-                        ],
-                      },
-                      ":*",
-                    ],
-                  ],
-                },
-              ],
-            },
-            {
-              "Action": [
-                "logs:CreateLogDelivery",
-                "logs:GetLogDelivery",
-                "logs:UpdateLogDelivery",
-                "logs:DeleteLogDelivery",
-                "logs:ListLogDeliveries",
-                "logs:PutResourcePolicy",
-                "logs:DescribeResourcePolicies",
-                "logs:DescribeLogGroups",
-              ],
-              "Effect": "Allow",
-              "Resource": "*",
-            },
-            {
-              "Action": [
-                "xray:PutTraceSegments",
-                "xray:PutTelemetryRecords",
-                "xray:GetSamplingRules",
-                "xray:GetSamplingTargets",
-              ],
-              "Effect": "Allow",
-              "Resource": "*",
-            },
-          ],
-          "Version": "2012-10-17",
-        },
-        "PolicyName": "HeatSheetProcessingRoleDefaultPolicy78D974D4",
-        "Roles": [
-          {
-            "Ref": "HeatSheetProcessingRole6DAC497F",
-          },
-        ],
-      },
-      "Type": "AWS::IAM::Policy",
-    },
-    "InitializeMeetFn1B1064EF": {
+    "OrchestratorFn6F7CE538": {
       "DependsOn": [
-        "InitializeMeetFnServiceRoleDefaultPolicy4C8C4F52",
-        "InitializeMeetFnServiceRoleADB1583D",
+        "OrchestratorFnServiceRoleDefaultPolicy7E0BC1A8",
+        "OrchestratorFnServiceRoleF6A73FA9",
       ],
       "Metadata": {
         "cdk_nag": {
           "rules_to_suppress": [
             {
               "id": "AwsSolutions-IAM4",
-              "reason": "AWSLambdaBasicExecutionRole for CloudWatch logging.",
+              "reason": "AWSLambdaBasicExecutionRole is the minimal managed policy for Lambda CloudWatch logging.",
+            },
+            {
+              "id": "AwsSolutions-IAM5",
+              "reason": "S3 read grant scoped to the raw-PDF bucket by CDK; Bedrock grant scoped to this agent/alias; durable execution grant scoped to this function ARN.",
             },
           ],
         },
@@ -2191,38 +1653,198 @@ Seed times prefixed with "X" are exhibition — keep the X prefix.
         ],
         "Code": {
           "S3Bucket": "cdk-hnb659fds-assets-123456789012-us-east-1",
-          "S3Key": "e24171c34c032120ad5315d7877b26da91cfd4b78936f789596a7233fd40c6e9.zip",
+          "S3Key": "12e8832c964210bbc0f667ad31d02fbef85bc2615810cc27cb9a16d344c1bca0.zip",
         },
-        "Description": "Step Functions task: creates the MEET#META DynamoDB record",
+        "Description": "Durable orchestrator: runs the full PDF heat sheet extraction pipeline with automatic checkpointing",
+        "DurableConfig": {
+          "ExecutionTimeout": 3600,
+          "RetentionPeriodInDays": 14,
+        },
         "Environment": {
           "Variables": {
+            "AGENT_ALIAS_ID": {
+              "Fn::GetAtt": [
+                "HeatSheetAgentAlias",
+                "AgentAliasId",
+              ],
+            },
+            "AGENT_ID": {
+              "Fn::GetAtt": [
+                "HeatSheetAgent",
+                "AgentId",
+              ],
+            },
             "NODE_OPTIONS": "--enable-source-maps",
             "TABLE_NAME": {
               "Fn::ImportValue": "TestStage-StorageStack:ExportsOutputRefMeetsTable194C39082FACE429",
             },
           },
         },
-        "FunctionName": "swim-meet-initialize-TestStage-ProcessingStack",
+        "FunctionName": "swim-meet-orchestrator-TestStage-ProcessingStack",
         "Handler": "index.handler",
-        "MemorySize": 512,
+        "MemorySize": 1024,
         "Role": {
           "Fn::GetAtt": [
-            "InitializeMeetFnServiceRoleADB1583D",
+            "OrchestratorFnServiceRoleF6A73FA9",
             "Arn",
           ],
         },
         "Runtime": "nodejs22.x",
-        "Timeout": 300,
+        "Timeout": 900,
       },
       "Type": "AWS::Lambda::Function",
     },
-    "InitializeMeetFnServiceRoleADB1583D": {
+    "OrchestratorFnServiceRoleDefaultPolicy7E0BC1A8": {
       "Metadata": {
         "cdk_nag": {
           "rules_to_suppress": [
             {
               "id": "AwsSolutions-IAM4",
-              "reason": "AWSLambdaBasicExecutionRole for CloudWatch logging.",
+              "reason": "AWSLambdaBasicExecutionRole is the minimal managed policy for Lambda CloudWatch logging.",
+            },
+            {
+              "id": "AwsSolutions-IAM5",
+              "reason": "S3 read grant scoped to the raw-PDF bucket by CDK; Bedrock grant scoped to this agent/alias; durable execution grant scoped to this function ARN.",
+            },
+          ],
+        },
+      },
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "s3:GetObject*",
+                "s3:GetBucket*",
+                "s3:List*",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::ImportValue": "TestStage-StorageStack:ExportsOutputFnGetAttRawPdfBucket6B2950B2Arn1CBAE423",
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::ImportValue": "TestStage-StorageStack:ExportsOutputFnGetAttRawPdfBucket6B2950B2Arn1CBAE423",
+                      },
+                      "/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            {
+              "Action": [
+                "kms:Decrypt",
+                "kms:DescribeKey",
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::ImportValue": "TestStage-StorageStack:ExportsOutputFnGetAttEncryptionKey1B843E66Arn91172964",
+              },
+            },
+            {
+              "Action": [
+                "dynamodb:PutItem",
+                "dynamodb:BatchWriteItem",
+                "dynamodb:UpdateItem",
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::ImportValue": "TestStage-StorageStack:ExportsOutputFnGetAttMeetsTable194C3908ArnAC801690",
+              },
+            },
+            {
+              "Action": [
+                "bedrock:InvokeAgent",
+                "bedrock:InvokeInlineAgent",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:bedrock:us-east-1:123456789012:agent/",
+                      {
+                        "Fn::GetAtt": [
+                          "HeatSheetAgent",
+                          "AgentId",
+                        ],
+                      },
+                    ],
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:bedrock:us-east-1:123456789012:agent-alias/",
+                      {
+                        "Fn::GetAtt": [
+                          "HeatSheetAgent",
+                          "AgentId",
+                        ],
+                      },
+                      "/",
+                      {
+                        "Fn::GetAtt": [
+                          "HeatSheetAgentAlias",
+                          "AgentAliasId",
+                        ],
+                      },
+                    ],
+                  ],
+                },
+              ],
+            },
+            {
+              "Action": [
+                "lambda:GetDurableExecution",
+                "lambda:GetDurableExecutionState",
+                "lambda:CheckpointDurableExecution",
+                "lambda:InvokeFunction",
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition",
+                    },
+                    ":lambda:us-east-1:123456789012:function:swim-meet-orchestrator-*",
+                  ],
+                ],
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "OrchestratorFnServiceRoleDefaultPolicy7E0BC1A8",
+        "Roles": [
+          {
+            "Ref": "OrchestratorFnServiceRoleF6A73FA9",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "OrchestratorFnServiceRoleF6A73FA9": {
+      "Metadata": {
+        "cdk_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "AwsSolutions-IAM4",
+              "reason": "AWSLambdaBasicExecutionRole is the minimal managed policy for Lambda CloudWatch logging.",
+            },
+            {
+              "id": "AwsSolutions-IAM5",
+              "reason": "S3 read grant scoped to the raw-PDF bucket by CDK; Bedrock grant scoped to this agent/alias; durable execution grant scoped to this function ARN.",
             },
           ],
         },
@@ -2249,46 +1871,13 @@ Seed times prefixed with "X" are exhibition — keep the X prefix.
                 {
                   "Ref": "AWS::Partition",
                 },
-                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+                ":iam::aws:policy/service-role/AWSLambdaBasicDurableExecutionRolePolicy",
               ],
             ],
           },
         ],
       },
       "Type": "AWS::IAM::Role",
-    },
-    "InitializeMeetFnServiceRoleDefaultPolicy4C8C4F52": {
-      "Metadata": {
-        "cdk_nag": {
-          "rules_to_suppress": [
-            {
-              "id": "AwsSolutions-IAM4",
-              "reason": "AWSLambdaBasicExecutionRole for CloudWatch logging.",
-            },
-          ],
-        },
-      },
-      "Properties": {
-        "PolicyDocument": {
-          "Statement": [
-            {
-              "Action": "dynamodb:PutItem",
-              "Effect": "Allow",
-              "Resource": {
-                "Fn::ImportValue": "TestStage-StorageStack:ExportsOutputFnGetAttMeetsTable194C3908ArnAC801690",
-              },
-            },
-          ],
-          "Version": "2012-10-17",
-        },
-        "PolicyName": "InitializeMeetFnServiceRoleDefaultPolicy4C8C4F52",
-        "Roles": [
-          {
-            "Ref": "InitializeMeetFnServiceRoleADB1583D",
-          },
-        ],
-      },
-      "Type": "AWS::IAM::Policy",
     },
     "PdfUploadRule6504FE60": {
       "Properties": {
@@ -2357,7 +1946,7 @@ Seed times prefixed with "X" are exhibition — keep the X prefix.
             },
             {
               "id": "AwsSolutions-IAM5",
-              "reason": "Lambda execution role wildcards are scoped to the state machine and SQS queue arns by CDK grants.",
+              "reason": "Lambda invoke grant scoped to the orchestrator function ARN by CDK.",
             },
           ],
         },
@@ -2368,14 +1957,17 @@ Seed times prefixed with "X" are exhibition — keep the X prefix.
         ],
         "Code": {
           "S3Bucket": "cdk-hnb659fds-assets-123456789012-us-east-1",
-          "S3Key": "94bb51dbf9157e6f42680abd9eabcb4b099b938f874983e6197943f1cc5fb519.zip",
+          "S3Key": "b44238e00bf67a737f2371babeb44f37cff93b6aa35fb231b0e5dec833b85113.zip",
         },
-        "Description": "Reads SQS messages from S3/EventBridge and starts Step Functions executions",
+        "Description": "Reads SQS messages from S3/EventBridge and async-invokes the durable Orchestrator Lambda",
         "Environment": {
           "Variables": {
             "NODE_OPTIONS": "--enable-source-maps",
-            "STATE_MACHINE_ARN": {
-              "Ref": "HeatSheetProcessingB66DCE4D",
+            "ORCHESTRATOR_ARN": {
+              "Fn::GetAtt": [
+                "OrchestratorFn6F7CE538",
+                "Arn",
+              ],
             },
             "TABLE_NAME": {
               "Fn::ImportValue": "TestStage-StorageStack:ExportsOutputRefMeetsTable194C39082FACE429",
@@ -2406,7 +1998,7 @@ Seed times prefixed with "X" are exhibition — keep the X prefix.
             },
             {
               "id": "AwsSolutions-IAM5",
-              "reason": "Lambda execution role wildcards are scoped to the state machine and SQS queue arns by CDK grants.",
+              "reason": "Lambda invoke grant scoped to the orchestrator function ARN by CDK.",
             },
           ],
         },
@@ -2451,7 +2043,7 @@ Seed times prefixed with "X" are exhibition — keep the X prefix.
             },
             {
               "id": "AwsSolutions-IAM5",
-              "reason": "Lambda execution role wildcards are scoped to the state machine and SQS queue arns by CDK grants.",
+              "reason": "Lambda invoke grant scoped to the orchestrator function ARN by CDK.",
             },
           ],
         },
@@ -2460,11 +2052,30 @@ Seed times prefixed with "X" are exhibition — keep the X prefix.
         "PolicyDocument": {
           "Statement": [
             {
-              "Action": "states:StartExecution",
+              "Action": "lambda:InvokeFunction",
               "Effect": "Allow",
-              "Resource": {
-                "Ref": "HeatSheetProcessingB66DCE4D",
-              },
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "OrchestratorFn6F7CE538",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "OrchestratorFn6F7CE538",
+                          "Arn",
+                        ],
+                      },
+                      ":*",
+                    ],
+                  ],
+                },
+              ],
             },
             {
               "Action": [
@@ -2504,7 +2115,7 @@ Seed times prefixed with "X" are exhibition — keep the X prefix.
             },
             {
               "id": "AwsSolutions-IAM5",
-              "reason": "Lambda execution role wildcards are scoped to the state machine and SQS queue arns by CDK grants.",
+              "reason": "Lambda invoke grant scoped to the orchestrator function ARN by CDK.",
             },
           ],
         },
@@ -2586,355 +2197,6 @@ Seed times prefixed with "X" are exhibition — keep the X prefix.
         ],
       },
       "Type": "AWS::SQS::QueuePolicy",
-    },
-    "StateMachineArnParam7E1F013F": {
-      "Properties": {
-        "Description": "Step Functions state machine ARN for heat sheet processing",
-        "Name": "/swim-meet/test/processing/state-machine-arn",
-        "Type": "String",
-        "Value": {
-          "Ref": "HeatSheetProcessingB66DCE4D",
-        },
-      },
-      "Type": "AWS::SSM::Parameter",
-    },
-    "StateMachineLogGroup15B91BCB": {
-      "DeletionPolicy": "Delete",
-      "Properties": {
-        "LogGroupName": "/aws/states/swim-meet-processing-TestStage-ProcessingStack",
-        "RetentionInDays": 30,
-      },
-      "Type": "AWS::Logs::LogGroup",
-      "UpdateReplacePolicy": "Delete",
-    },
-    "StoreHeatsFnCDAD62C9": {
-      "DependsOn": [
-        "StoreHeatsFnServiceRoleDefaultPolicy10696113",
-        "StoreHeatsFnServiceRole098B8FA2",
-      ],
-      "Metadata": {
-        "cdk_nag": {
-          "rules_to_suppress": [
-            {
-              "id": "AwsSolutions-IAM4",
-              "reason": "AWSLambdaBasicExecutionRole for CloudWatch logging.",
-            },
-          ],
-        },
-      },
-      "Properties": {
-        "Architectures": [
-          "arm64",
-        ],
-        "Code": {
-          "S3Bucket": "cdk-hnb659fds-assets-123456789012-us-east-1",
-          "S3Key": "df27c308a944565dbf99cf695eec7d87a92854c55af6a09fba5fe46dc53e1304.zip",
-        },
-        "Description": "Step Functions task: batch-writes heats to DynamoDB",
-        "Environment": {
-          "Variables": {
-            "NODE_OPTIONS": "--enable-source-maps",
-            "TABLE_NAME": {
-              "Fn::ImportValue": "TestStage-StorageStack:ExportsOutputRefMeetsTable194C39082FACE429",
-            },
-          },
-        },
-        "FunctionName": "swim-meet-store-heats-TestStage-ProcessingStack",
-        "Handler": "index.handler",
-        "MemorySize": 512,
-        "Role": {
-          "Fn::GetAtt": [
-            "StoreHeatsFnServiceRole098B8FA2",
-            "Arn",
-          ],
-        },
-        "Runtime": "nodejs22.x",
-        "Timeout": 300,
-      },
-      "Type": "AWS::Lambda::Function",
-    },
-    "StoreHeatsFnServiceRole098B8FA2": {
-      "Metadata": {
-        "cdk_nag": {
-          "rules_to_suppress": [
-            {
-              "id": "AwsSolutions-IAM4",
-              "reason": "AWSLambdaBasicExecutionRole for CloudWatch logging.",
-            },
-          ],
-        },
-      },
-      "Properties": {
-        "AssumeRolePolicyDocument": {
-          "Statement": [
-            {
-              "Action": "sts:AssumeRole",
-              "Effect": "Allow",
-              "Principal": {
-                "Service": "lambda.amazonaws.com",
-              },
-            },
-          ],
-          "Version": "2012-10-17",
-        },
-        "ManagedPolicyArns": [
-          {
-            "Fn::Join": [
-              "",
-              [
-                "arn:",
-                {
-                  "Ref": "AWS::Partition",
-                },
-                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
-              ],
-            ],
-          },
-        ],
-      },
-      "Type": "AWS::IAM::Role",
-    },
-    "StoreHeatsFnServiceRoleDefaultPolicy10696113": {
-      "Metadata": {
-        "cdk_nag": {
-          "rules_to_suppress": [
-            {
-              "id": "AwsSolutions-IAM4",
-              "reason": "AWSLambdaBasicExecutionRole for CloudWatch logging.",
-            },
-          ],
-        },
-      },
-      "Properties": {
-        "PolicyDocument": {
-          "Statement": [
-            {
-              "Action": [
-                "dynamodb:BatchWriteItem",
-                "dynamodb:UpdateItem",
-              ],
-              "Effect": "Allow",
-              "Resource": {
-                "Fn::ImportValue": "TestStage-StorageStack:ExportsOutputFnGetAttMeetsTable194C3908ArnAC801690",
-              },
-            },
-          ],
-          "Version": "2012-10-17",
-        },
-        "PolicyName": "StoreHeatsFnServiceRoleDefaultPolicy10696113",
-        "Roles": [
-          {
-            "Ref": "StoreHeatsFnServiceRole098B8FA2",
-          },
-        ],
-      },
-      "Type": "AWS::IAM::Policy",
-    },
-    "UpdateMeetStatusFn964CD653": {
-      "DependsOn": [
-        "UpdateMeetStatusFnServiceRoleDefaultPolicy3A9F2875",
-        "UpdateMeetStatusFnServiceRoleCF7E2FC8",
-      ],
-      "Metadata": {
-        "cdk_nag": {
-          "rules_to_suppress": [
-            {
-              "id": "AwsSolutions-IAM4",
-              "reason": "AWSLambdaBasicExecutionRole for CloudWatch logging.",
-            },
-          ],
-        },
-      },
-      "Properties": {
-        "Architectures": [
-          "arm64",
-        ],
-        "Code": {
-          "S3Bucket": "cdk-hnb659fds-assets-123456789012-us-east-1",
-          "S3Key": "15964b8f2b3eaa29c4acabae34e08607925a23bcd04822d37777f47dcd1c0b2a.zip",
-        },
-        "Description": "Step Functions task: updates processingStatus on the META record",
-        "Environment": {
-          "Variables": {
-            "NODE_OPTIONS": "--enable-source-maps",
-            "TABLE_NAME": {
-              "Fn::ImportValue": "TestStage-StorageStack:ExportsOutputRefMeetsTable194C39082FACE429",
-            },
-          },
-        },
-        "FunctionName": "swim-meet-update-status-TestStage-ProcessingStack",
-        "Handler": "index.handler",
-        "MemorySize": 512,
-        "Role": {
-          "Fn::GetAtt": [
-            "UpdateMeetStatusFnServiceRoleCF7E2FC8",
-            "Arn",
-          ],
-        },
-        "Runtime": "nodejs22.x",
-        "Timeout": 300,
-      },
-      "Type": "AWS::Lambda::Function",
-    },
-    "UpdateMeetStatusFnServiceRoleCF7E2FC8": {
-      "Metadata": {
-        "cdk_nag": {
-          "rules_to_suppress": [
-            {
-              "id": "AwsSolutions-IAM4",
-              "reason": "AWSLambdaBasicExecutionRole for CloudWatch logging.",
-            },
-          ],
-        },
-      },
-      "Properties": {
-        "AssumeRolePolicyDocument": {
-          "Statement": [
-            {
-              "Action": "sts:AssumeRole",
-              "Effect": "Allow",
-              "Principal": {
-                "Service": "lambda.amazonaws.com",
-              },
-            },
-          ],
-          "Version": "2012-10-17",
-        },
-        "ManagedPolicyArns": [
-          {
-            "Fn::Join": [
-              "",
-              [
-                "arn:",
-                {
-                  "Ref": "AWS::Partition",
-                },
-                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
-              ],
-            ],
-          },
-        ],
-      },
-      "Type": "AWS::IAM::Role",
-    },
-    "UpdateMeetStatusFnServiceRoleDefaultPolicy3A9F2875": {
-      "Metadata": {
-        "cdk_nag": {
-          "rules_to_suppress": [
-            {
-              "id": "AwsSolutions-IAM4",
-              "reason": "AWSLambdaBasicExecutionRole for CloudWatch logging.",
-            },
-          ],
-        },
-      },
-      "Properties": {
-        "PolicyDocument": {
-          "Statement": [
-            {
-              "Action": "dynamodb:UpdateItem",
-              "Effect": "Allow",
-              "Resource": {
-                "Fn::ImportValue": "TestStage-StorageStack:ExportsOutputFnGetAttMeetsTable194C3908ArnAC801690",
-              },
-            },
-          ],
-          "Version": "2012-10-17",
-        },
-        "PolicyName": "UpdateMeetStatusFnServiceRoleDefaultPolicy3A9F2875",
-        "Roles": [
-          {
-            "Ref": "UpdateMeetStatusFnServiceRoleCF7E2FC8",
-          },
-        ],
-      },
-      "Type": "AWS::IAM::Policy",
-    },
-    "ValidateExtractionFn4CD1344B": {
-      "DependsOn": [
-        "ValidateExtractionFnServiceRole2548A707",
-      ],
-      "Metadata": {
-        "cdk_nag": {
-          "rules_to_suppress": [
-            {
-              "id": "AwsSolutions-IAM4",
-              "reason": "AWSLambdaBasicExecutionRole for CloudWatch logging.",
-            },
-          ],
-        },
-      },
-      "Properties": {
-        "Architectures": [
-          "arm64",
-        ],
-        "Code": {
-          "S3Bucket": "cdk-hnb659fds-assets-123456789012-us-east-1",
-          "S3Key": "6167895d7c84e221ae2ff6c4cea898a75220a08ce4ad98f074ee1daa5e0492de.zip",
-        },
-        "Description": "Step Functions task: validates extracted heat JSON schema",
-        "Environment": {
-          "Variables": {
-            "NODE_OPTIONS": "--enable-source-maps",
-            "TABLE_NAME": {
-              "Fn::ImportValue": "TestStage-StorageStack:ExportsOutputRefMeetsTable194C39082FACE429",
-            },
-          },
-        },
-        "FunctionName": "swim-meet-validate-TestStage-ProcessingStack",
-        "Handler": "index.handler",
-        "MemorySize": 512,
-        "Role": {
-          "Fn::GetAtt": [
-            "ValidateExtractionFnServiceRole2548A707",
-            "Arn",
-          ],
-        },
-        "Runtime": "nodejs22.x",
-        "Timeout": 300,
-      },
-      "Type": "AWS::Lambda::Function",
-    },
-    "ValidateExtractionFnServiceRole2548A707": {
-      "Metadata": {
-        "cdk_nag": {
-          "rules_to_suppress": [
-            {
-              "id": "AwsSolutions-IAM4",
-              "reason": "AWSLambdaBasicExecutionRole for CloudWatch logging.",
-            },
-          ],
-        },
-      },
-      "Properties": {
-        "AssumeRolePolicyDocument": {
-          "Statement": [
-            {
-              "Action": "sts:AssumeRole",
-              "Effect": "Allow",
-              "Principal": {
-                "Service": "lambda.amazonaws.com",
-              },
-            },
-          ],
-          "Version": "2012-10-17",
-        },
-        "ManagedPolicyArns": [
-          {
-            "Fn::Join": [
-              "",
-              [
-                "arn:",
-                {
-                  "Ref": "AWS::Partition",
-                },
-                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
-              ],
-            ],
-          },
-        ],
-      },
-      "Type": "AWS::IAM::Role",
     },
   },
   "Rules": {
