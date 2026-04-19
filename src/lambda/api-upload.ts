@@ -53,11 +53,29 @@ export async function handler(event: ApiGwEvent): Promise<{
   headers: Record<string, string>;
   body: string;
 }> {
-  // The Cognito JWT authorizer has already validated the token;
-  // we just need the sub claim for key scoping.
+  // The Cognito JWT authorizer should have validated the token already,
+  // but fail closed here as defense-in-depth before issuing any upload URL.
   const claims = event.requestContext?.authorizer?.jwt?.claims;
-  const userSub = claims?.sub ?? 'anonymous';
+  const requiredWriteScope = 'meets/write';
+  const scopes = new Set((claims?.scope ?? '').split(' ').filter(Boolean));
 
+  if (!claims?.sub?.trim()) {
+    return {
+      statusCode: 401,
+      headers: CORS_HEADERS,
+      body: JSON.stringify({ message: 'Unauthorized' }),
+    };
+  }
+
+  if (!scopes.has(requiredWriteScope)) {
+    return {
+      statusCode: 403,
+      headers: CORS_HEADERS,
+      body: JSON.stringify({ message: 'Forbidden' }),
+    };
+  }
+
+  const userSub = claims.sub;
   let body: UploadBody = {};
   try {
     if (event.body) body = JSON.parse(event.body) as UploadBody;
