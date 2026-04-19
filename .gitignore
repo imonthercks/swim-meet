@@ -49,4 +49,5 @@ junit.xml
 /cdk.out/
 .cdk.staging/
 .parcel-cache/
+!/.github/workflows/copilot-setup-steps.yml
 !/.projenrc.ts
