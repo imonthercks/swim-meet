@@ -1,12 +1,241 @@
 // Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
-exports[`Snapshot 1`] = `
+exports[`CognitoStack snapshot 1`] = `
 {
   "Parameters": {
     "BootstrapVersion": {
       "Default": "/cdk-bootstrap/hnb659fds/version",
       "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]",
       "Type": "AWS::SSM::Parameter::Value<String>",
+    },
+  },
+  "Resources": {
+    "ApiResourceServerParamC160C578": {
+      "Properties": {
+        "Description": "API resource server identifier URI",
+        "Name": "/swim-meet/test/cognito/api-resource-server-identifier",
+        "Type": "String",
+        "Value": "https://api.swim-meet.example.com",
+      },
+      "Type": "AWS::SSM::Parameter",
+    },
+    "GoogleProvider566D8493": {
+      "Properties": {
+        "AttributeMapping": {
+          "email": "email",
+          "family_name": "family_name",
+          "given_name": "given_name",
+          "picture": "picture",
+        },
+        "ProviderDetails": {
+          "authorize_scopes": "email profile openid",
+          "client_id": "test-google-client-id",
+          "client_secret": "test-google-client-secret",
+        },
+        "ProviderName": "Google",
+        "ProviderType": "Google",
+        "UserPoolId": {
+          "Ref": "UserPool6BA7E5F2",
+        },
+      },
+      "Type": "AWS::Cognito::UserPoolIdentityProvider",
+    },
+    "UserPool6BA7E5F2": {
+      "DeletionPolicy": "Retain",
+      "Metadata": {
+        "cdk_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "AwsSolutions-COG2",
+              "reason": "SMS MFA is disabled intentionally; TOTP MFA is configured as optional.",
+            },
+            {
+              "id": "AwsSolutions-COG7",
+              "reason": "Advanced security mode is not required for this project.",
+            },
+          ],
+        },
+      },
+      "Properties": {
+        "AccountRecoverySetting": {
+          "RecoveryMechanisms": [
+            {
+              "Name": "verified_email",
+              "Priority": 1,
+            },
+          ],
+        },
+        "AdminCreateUserConfig": {
+          "AllowAdminCreateUserOnly": true,
+        },
+        "AutoVerifiedAttributes": [
+          "email",
+        ],
+        "EmailVerificationMessage": "The verification code to your new account is {####}",
+        "EmailVerificationSubject": "Verify your new account",
+        "EnabledMfas": [
+          "SOFTWARE_TOKEN_MFA",
+        ],
+        "MfaConfiguration": "OPTIONAL",
+        "Policies": {
+          "PasswordPolicy": {
+            "MinimumLength": 12,
+            "RequireLowercase": true,
+            "RequireNumbers": true,
+            "RequireSymbols": true,
+            "RequireUppercase": true,
+          },
+        },
+        "SmsVerificationMessage": "The verification code to your new account is {####}",
+        "UsernameAttributes": [
+          "email",
+        ],
+        "VerificationMessageTemplate": {
+          "DefaultEmailOption": "CONFIRM_WITH_CODE",
+          "EmailMessage": "The verification code to your new account is {####}",
+          "EmailSubject": "Verify your new account",
+          "SmsMessage": "The verification code to your new account is {####}",
+        },
+      },
+      "Type": "AWS::Cognito::UserPool",
+      "UpdateReplacePolicy": "Retain",
+    },
+    "UserPoolApiResourceServer544B1930": {
+      "Properties": {
+        "Identifier": "https://api.swim-meet.example.com",
+        "Name": "https://api.swim-meet.example.com",
+        "Scopes": [
+          {
+            "ScopeDescription": "Read-only access to the Swim Meet API",
+            "ScopeName": "global.read",
+          },
+          {
+            "ScopeDescription": "Write access to the Swim Meet API",
+            "ScopeName": "global.write",
+          },
+        ],
+        "UserPoolId": {
+          "Ref": "UserPool6BA7E5F2",
+        },
+      },
+      "Type": "AWS::Cognito::UserPoolResourceServer",
+    },
+    "UserPoolClientIdParam5DF0EADC": {
+      "Properties": {
+        "Description": "Cognito User Pool Client ID (SPA)",
+        "Name": "/swim-meet/test/cognito/user-pool-client-id",
+        "Type": "String",
+        "Value": {
+          "Ref": "UserPoolSpaClient6B560FFA",
+        },
+      },
+      "Type": "AWS::SSM::Parameter",
+    },
+    "UserPoolDomainParam482CE561": {
+      "Properties": {
+        "Description": "Cognito hosted-UI base URL",
+        "Name": "/swim-meet/test/cognito/user-pool-domain",
+        "Type": "String",
+        "Value": {
+          "Fn::Join": [
+            "",
+            [
+              "https://",
+              {
+                "Ref": "UserPoolUserPoolDomain9F01E991",
+              },
+              ".auth.us-east-1.amazoncognito.com",
+            ],
+          ],
+        },
+      },
+      "Type": "AWS::SSM::Parameter",
+    },
+    "UserPoolIdParam81D6760E": {
+      "Properties": {
+        "Description": "Cognito User Pool ID",
+        "Name": "/swim-meet/test/cognito/user-pool-id",
+        "Type": "String",
+        "Value": {
+          "Ref": "UserPool6BA7E5F2",
+        },
+      },
+      "Type": "AWS::SSM::Parameter",
+    },
+    "UserPoolSpaClient6B560FFA": {
+      "DependsOn": [
+        "GoogleProvider566D8493",
+      ],
+      "Properties": {
+        "AccessTokenValidity": 60,
+        "AllowedOAuthFlows": [
+          "code",
+        ],
+        "AllowedOAuthFlowsUserPoolClient": true,
+        "AllowedOAuthScopes": [
+          "openid",
+          "email",
+          "profile",
+          {
+            "Fn::Join": [
+              "",
+              [
+                {
+                  "Ref": "UserPoolApiResourceServer544B1930",
+                },
+                "/global.read",
+              ],
+            ],
+          },
+          {
+            "Fn::Join": [
+              "",
+              [
+                {
+                  "Ref": "UserPoolApiResourceServer544B1930",
+                },
+                "/global.write",
+              ],
+            ],
+          },
+        ],
+        "CallbackURLs": [
+          "https://example.com/callback",
+        ],
+        "ExplicitAuthFlows": [
+          "ALLOW_USER_SRP_AUTH",
+          "ALLOW_REFRESH_TOKEN_AUTH",
+        ],
+        "GenerateSecret": false,
+        "IdTokenValidity": 60,
+        "LogoutURLs": [
+          "https://example.com",
+        ],
+        "PreventUserExistenceErrors": "ENABLED",
+        "RefreshTokenValidity": 10080,
+        "SupportedIdentityProviders": [
+          "COGNITO",
+          "Google",
+        ],
+        "TokenValidityUnits": {
+          "AccessToken": "minutes",
+          "IdToken": "minutes",
+          "RefreshToken": "minutes",
+        },
+        "UserPoolId": {
+          "Ref": "UserPool6BA7E5F2",
+        },
+      },
+      "Type": "AWS::Cognito::UserPoolClient",
+    },
+    "UserPoolUserPoolDomain9F01E991": {
+      "Properties": {
+        "Domain": "swim-meet-test",
+        "UserPoolId": {
+          "Ref": "UserPool6BA7E5F2",
+        },
+      },
+      "Type": "AWS::Cognito::UserPoolDomain",
     },
   },
   "Rules": {

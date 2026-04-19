@@ -1,5 +1,6 @@
 {
   "name": "swim-meet",
+  "description": "Swim Meet CDK infrastructure including Cognito User Pool with Google federation",
   "scripts": {
     "build": "projen build",
     "bundle": "projen bundle",
@@ -43,6 +44,7 @@
   },
   "dependencies": {
     "aws-cdk-lib": "^2.189.1",
+    "cdk-nag": "^2.37.55",
     "constructs": "^10.5.1"
   },
   "pnpm": {},

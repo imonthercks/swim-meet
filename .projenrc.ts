@@ -6,8 +6,8 @@ const project = new awscdk.AwsCdkTypeScriptApp({
   packageManager: javascript.NodePackageManager.PNPM,
   projenrcTs: true,
 
-  // deps: [],                /* Runtime dependencies of this module. */
-  // description: undefined,  /* The description is just a string that helps people understand the purpose of the package. */
+  deps: ['cdk-nag'],
+  description: 'Swim Meet CDK infrastructure including Cognito User Pool with Google federation',
   // devDeps: [],             /* Build dependencies for this module. */
   // packageName: undefined,  /* The "name" in package.json. */
 });
