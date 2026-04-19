@@ -6,7 +6,6 @@ skills:
   - aws-mcp-setup
 allowed-tools:
   - mcp__cdk__*
-  - mcp__aws-mcp__*
   - mcp__awsdocs__*
   - Bash(cdk *)
   - Bash(npm *)
@@ -42,7 +41,7 @@ Key project files:
 
 ## AWS Documentation Requirement
 
-Always verify AWS facts using MCP tools (`mcp__aws-mcp__*` or `mcp__awsdocs__*`) before answering. The `aws-mcp-setup` dependency is auto-loaded — if MCP tools are unavailable, guide the user through that skill's setup flow.
+Always verify AWS facts using MCP tools (`mcp__awsdocs__*`) before answering. The `aws-mcp-setup` dependency is auto-loaded — if MCP tools are unavailable, guide the user through that skill's setup flow.
 
 ## Integrated MCP Servers
 
@@ -55,7 +54,7 @@ This skill is configured to use two MCP servers when available:
 - Validate CDK configurations
 - Access CDK-specific APIs and utilities
 
-### AWS Documentation / API MCP Server (`mcp__aws-mcp__*`, `mcp__awsdocs__*`)
+### AWS Documentation / API MCP Server (`mcp__awsdocs__*`)
 **When to use**: Verifying AWS service capabilities, regional availability, and API specs
 - Confirm service limits, quotas, and feature availability
 - Get latest API parameter specifications
@@ -107,7 +106,7 @@ This project uses projen. **Never manually edit projen-generated files** (e.g., 
 2. Run `pnpm exec projen` to regenerate
 3. Commit the resulting changes
 
-> **Exception**: `.github/workflows/copilot-setup-steps.yml` and files under `.github/agents/` are hand-maintained and should be edited directly.
+> **Exception**: Files under `.github/agents/` are hand-maintained and should be edited directly. `.github/workflows/copilot-setup-steps.yml` is projen-generated — edit `.projenrc.ts` and run `pnpm exec projen` to update it.
 
 ### Secrets Management
 
@@ -181,7 +180,7 @@ new NodejsFunction(this, 'MyFunction', {
 - CDK best practice patterns
 - Construct property configurations
 
-### AWS Documentation MCP (`mcp__aws-mcp__*`, `mcp__awsdocs__*`)
+### AWS Documentation MCP (`mcp__awsdocs__*`)
 - Verify new AWS service features before implementing
 - Check regional availability for all required services
 - Confirm latest API specifications and service limits
