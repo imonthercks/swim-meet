@@ -6,7 +6,20 @@ const project = new awscdk.AwsCdkTypeScriptApp({
   packageManager: javascript.NodePackageManager.PNPM,
   projenrcTs: true,
 
-  deps: ['cdk-nag'],
+  deps: [
+    'cdk-nag',
+    // AWS SDK v3 packages imported by Lambda handler sources.
+    // NodejsFunction (esbuild) marks @aws-sdk/* as external for Node.js 22+ runtimes
+    // so these are not bundled into the Lambda ZIP — they are available from the
+    // Lambda runtime environment.  Listing them as deps (not devDeps) satisfies the
+    // eslint import/no-extraneous-dependencies rule.
+    '@aws-sdk/client-bedrock-agent-runtime',
+    '@aws-sdk/client-dynamodb',
+    '@aws-sdk/client-s3',
+    '@aws-sdk/client-sfn',
+    '@aws-sdk/s3-request-presigner',
+    '@aws-sdk/util-dynamodb',
+  ],
   description: 'Swim Meet CDK infrastructure including Cognito User Pool with Google federation',
   // devDeps: [],             /* Build dependencies for this module. */
   // packageName: undefined,  /* The "name" in package.json. */

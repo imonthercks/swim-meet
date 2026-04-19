@@ -43,6 +43,12 @@
     "typescript": "^6.0.3"
   },
   "dependencies": {
+    "@aws-sdk/client-bedrock-agent-runtime": "*",
+    "@aws-sdk/client-dynamodb": "*",
+    "@aws-sdk/client-s3": "*",
+    "@aws-sdk/client-sfn": "*",
+    "@aws-sdk/s3-request-presigner": "*",
+    "@aws-sdk/util-dynamodb": "*",
     "aws-cdk-lib": "^2.189.1",
     "cdk-nag": "^2.37.55",
     "constructs": "^10.5.1"

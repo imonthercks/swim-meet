@@ -1,7 +1,1188 @@
 // Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
+exports[`ApiStack snapshot 1`] = `
+{
+  "Parameters": {
+    "BootstrapVersion": {
+      "Default": "/cdk-bootstrap/hnb659fds/version",
+      "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]",
+      "Type": "AWS::SSM::Parameter::Value<String>",
+    },
+  },
+  "Resources": {
+    "ApiUrlParam8AD347B3": {
+      "Properties": {
+        "Description": "HTTP API Gateway endpoint URL",
+        "Name": "/swim-meet/test/api/url",
+        "Type": "String",
+        "Value": {
+          "Fn::GetAtt": [
+            "SwimMeetApi82775B04",
+            "ApiEndpoint",
+          ],
+        },
+      },
+      "Type": "AWS::SSM::Parameter",
+    },
+    "GetHeatsFnBFAC545E": {
+      "DependsOn": [
+        "GetHeatsFnServiceRoleDefaultPolicy76B681A9",
+        "GetHeatsFnServiceRoleF43D043E",
+      ],
+      "Metadata": {
+        "cdk_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "AwsSolutions-IAM4",
+              "reason": "AWSLambdaBasicExecutionRole for CloudWatch logging.",
+            },
+            {
+              "id": "AwsSolutions-IAM5",
+              "reason": "DynamoDB and S3 permissions are scoped to the specific table/bucket.",
+            },
+          ],
+        },
+      },
+      "Properties": {
+        "Architectures": [
+          "arm64",
+        ],
+        "Code": {
+          "S3Bucket": "cdk-hnb659fds-assets-123456789012-us-east-1",
+          "S3Key": "8a699f0846229bd4db20589e7f2f719e3f718bff963b0ab02959112914d46a8f.zip",
+        },
+        "Description": "GET /meets/{meetId}/heats — returns full heat array for the SPA",
+        "Environment": {
+          "Variables": {
+            "NODE_OPTIONS": "--enable-source-maps",
+            "TABLE_NAME": {
+              "Fn::ImportValue": "TestStage-StorageStack:ExportsOutputRefMeetsTable194C39082FACE429",
+            },
+          },
+        },
+        "FunctionName": "swim-meet-api-get-heats-TestStage-ApiStack",
+        "Handler": "index.handler",
+        "MemorySize": 256,
+        "Role": {
+          "Fn::GetAtt": [
+            "GetHeatsFnServiceRoleF43D043E",
+            "Arn",
+          ],
+        },
+        "Runtime": "nodejs22.x",
+        "Timeout": 30,
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "GetHeatsFnServiceRoleDefaultPolicy76B681A9": {
+      "Metadata": {
+        "cdk_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "AwsSolutions-IAM4",
+              "reason": "AWSLambdaBasicExecutionRole for CloudWatch logging.",
+            },
+            {
+              "id": "AwsSolutions-IAM5",
+              "reason": "DynamoDB and S3 permissions are scoped to the specific table/bucket.",
+            },
+          ],
+        },
+      },
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "dynamodb:Query",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::ImportValue": "TestStage-StorageStack:ExportsOutputFnGetAttMeetsTable194C3908ArnAC801690",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "GetHeatsFnServiceRoleDefaultPolicy76B681A9",
+        "Roles": [
+          {
+            "Ref": "GetHeatsFnServiceRoleF43D043E",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "GetHeatsFnServiceRoleF43D043E": {
+      "Metadata": {
+        "cdk_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "AwsSolutions-IAM4",
+              "reason": "AWSLambdaBasicExecutionRole for CloudWatch logging.",
+            },
+            {
+              "id": "AwsSolutions-IAM5",
+              "reason": "DynamoDB and S3 permissions are scoped to the specific table/bucket.",
+            },
+          ],
+        },
+      },
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "ListMeetsFn6A3E03CD": {
+      "DependsOn": [
+        "ListMeetsFnServiceRoleDefaultPolicyDEC40687",
+        "ListMeetsFnServiceRole62FD12FD",
+      ],
+      "Metadata": {
+        "cdk_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "AwsSolutions-IAM4",
+              "reason": "AWSLambdaBasicExecutionRole for CloudWatch logging.",
+            },
+            {
+              "id": "AwsSolutions-IAM5",
+              "reason": "DynamoDB and S3 permissions are scoped to the specific table/bucket.",
+            },
+          ],
+        },
+      },
+      "Properties": {
+        "Architectures": [
+          "arm64",
+        ],
+        "Code": {
+          "S3Bucket": "cdk-hnb659fds-assets-123456789012-us-east-1",
+          "S3Key": "9f79a8fa528c32697f9ec1dd231cd0a4e0dcfd084da4d05024d8c7b61575249a.zip",
+        },
+        "Description": "GET /meets — returns summary list of swim meets",
+        "Environment": {
+          "Variables": {
+            "NODE_OPTIONS": "--enable-source-maps",
+            "TABLE_NAME": {
+              "Fn::ImportValue": "TestStage-StorageStack:ExportsOutputRefMeetsTable194C39082FACE429",
+            },
+          },
+        },
+        "FunctionName": "swim-meet-api-list-meets-TestStage-ApiStack",
+        "Handler": "index.handler",
+        "MemorySize": 256,
+        "Role": {
+          "Fn::GetAtt": [
+            "ListMeetsFnServiceRole62FD12FD",
+            "Arn",
+          ],
+        },
+        "Runtime": "nodejs22.x",
+        "Timeout": 30,
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "ListMeetsFnServiceRole62FD12FD": {
+      "Metadata": {
+        "cdk_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "AwsSolutions-IAM4",
+              "reason": "AWSLambdaBasicExecutionRole for CloudWatch logging.",
+            },
+            {
+              "id": "AwsSolutions-IAM5",
+              "reason": "DynamoDB and S3 permissions are scoped to the specific table/bucket.",
+            },
+          ],
+        },
+      },
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "ListMeetsFnServiceRoleDefaultPolicyDEC40687": {
+      "Metadata": {
+        "cdk_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "AwsSolutions-IAM4",
+              "reason": "AWSLambdaBasicExecutionRole for CloudWatch logging.",
+            },
+            {
+              "id": "AwsSolutions-IAM5",
+              "reason": "DynamoDB and S3 permissions are scoped to the specific table/bucket.",
+            },
+          ],
+        },
+      },
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "dynamodb:Scan",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::ImportValue": "TestStage-StorageStack:ExportsOutputFnGetAttMeetsTable194C3908ArnAC801690",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "ListMeetsFnServiceRoleDefaultPolicyDEC40687",
+        "Roles": [
+          {
+            "Ref": "ListMeetsFnServiceRole62FD12FD",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "MeetStatusFn36D9D870": {
+      "DependsOn": [
+        "MeetStatusFnServiceRoleDefaultPolicy210A6A28",
+        "MeetStatusFnServiceRole5389CD71",
+      ],
+      "Metadata": {
+        "cdk_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "AwsSolutions-IAM4",
+              "reason": "AWSLambdaBasicExecutionRole for CloudWatch logging.",
+            },
+            {
+              "id": "AwsSolutions-IAM5",
+              "reason": "DynamoDB and S3 permissions are scoped to the specific table/bucket.",
+            },
+          ],
+        },
+      },
+      "Properties": {
+        "Architectures": [
+          "arm64",
+        ],
+        "Code": {
+          "S3Bucket": "cdk-hnb659fds-assets-123456789012-us-east-1",
+          "S3Key": "1f8dea634576bc95ed22d1aa29f0047c51ea2590454f9308b75fd20b585622e0.zip",
+        },
+        "Description": "GET /meets/{meetId}/status — returns current processing status",
+        "Environment": {
+          "Variables": {
+            "NODE_OPTIONS": "--enable-source-maps",
+            "TABLE_NAME": {
+              "Fn::ImportValue": "TestStage-StorageStack:ExportsOutputRefMeetsTable194C39082FACE429",
+            },
+          },
+        },
+        "FunctionName": "swim-meet-api-meet-status-TestStage-ApiStack",
+        "Handler": "index.handler",
+        "MemorySize": 256,
+        "Role": {
+          "Fn::GetAtt": [
+            "MeetStatusFnServiceRole5389CD71",
+            "Arn",
+          ],
+        },
+        "Runtime": "nodejs22.x",
+        "Timeout": 30,
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "MeetStatusFnServiceRole5389CD71": {
+      "Metadata": {
+        "cdk_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "AwsSolutions-IAM4",
+              "reason": "AWSLambdaBasicExecutionRole for CloudWatch logging.",
+            },
+            {
+              "id": "AwsSolutions-IAM5",
+              "reason": "DynamoDB and S3 permissions are scoped to the specific table/bucket.",
+            },
+          ],
+        },
+      },
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "MeetStatusFnServiceRoleDefaultPolicy210A6A28": {
+      "Metadata": {
+        "cdk_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "AwsSolutions-IAM4",
+              "reason": "AWSLambdaBasicExecutionRole for CloudWatch logging.",
+            },
+            {
+              "id": "AwsSolutions-IAM5",
+              "reason": "DynamoDB and S3 permissions are scoped to the specific table/bucket.",
+            },
+          ],
+        },
+      },
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "dynamodb:GetItem",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::ImportValue": "TestStage-StorageStack:ExportsOutputFnGetAttMeetsTable194C3908ArnAC801690",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "MeetStatusFnServiceRoleDefaultPolicy210A6A28",
+        "Roles": [
+          {
+            "Ref": "MeetStatusFnServiceRole5389CD71",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "SwimMeetApi82775B04": {
+      "Metadata": {
+        "cdk_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "AwsSolutions-APIG4",
+              "reason": "All data routes use the Cognito JWT authorizer; OPTIONS pre-flight routes are intentionally unauthenticated.",
+            },
+            {
+              "id": "AwsSolutions-HTTP2",
+              "reason": "HTTP API does not support access-log format strings the same way as REST API; CloudWatch metrics are enabled by default.",
+            },
+          ],
+        },
+      },
+      "Properties": {
+        "CorsConfiguration": {
+          "AllowHeaders": [
+            "Authorization",
+            "Content-Type",
+          ],
+          "AllowMethods": [
+            "GET",
+            "POST",
+            "OPTIONS",
+          ],
+          "AllowOrigins": [
+            "*",
+          ],
+          "MaxAge": 3600,
+        },
+        "Description": "Swim Meet SPA backend — heat sheet data and PDF upload",
+        "Name": "swim-meet-api-TestStage-ApiStack",
+        "ProtocolType": "HTTP",
+      },
+      "Type": "AWS::ApiGatewayV2::Api",
+    },
+    "SwimMeetApiCognitoAuthorizer9BAB2028": {
+      "Metadata": {
+        "cdk_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "AwsSolutions-APIG4",
+              "reason": "All data routes use the Cognito JWT authorizer; OPTIONS pre-flight routes are intentionally unauthenticated.",
+            },
+            {
+              "id": "AwsSolutions-HTTP2",
+              "reason": "HTTP API does not support access-log format strings the same way as REST API; CloudWatch metrics are enabled by default.",
+            },
+          ],
+        },
+      },
+      "Properties": {
+        "ApiId": {
+          "Ref": "SwimMeetApi82775B04",
+        },
+        "AuthorizerType": "JWT",
+        "IdentitySource": [
+          "$request.header.Authorization",
+        ],
+        "JwtConfiguration": {
+          "Audience": [
+            {
+              "Fn::ImportValue": "TestStage-CognitoStack:ExportsOutputRefUserPoolSpaClient6B560FFA03368753",
+            },
+          ],
+          "Issuer": {
+            "Fn::Join": [
+              "",
+              [
+                "https://cognito-idp.us-east-1.amazonaws.com/",
+                {
+                  "Fn::ImportValue": "TestStage-CognitoStack:ExportsOutputRefUserPool6BA7E5F296FD7236",
+                },
+              ],
+            ],
+          },
+        },
+        "Name": "CognitoJwtAuthorizer",
+      },
+      "Type": "AWS::ApiGatewayV2::Authorizer",
+    },
+    "SwimMeetApiDefaultStage46A0A584": {
+      "Metadata": {
+        "cdk_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "AwsSolutions-APIG4",
+              "reason": "All data routes use the Cognito JWT authorizer; OPTIONS pre-flight routes are intentionally unauthenticated.",
+            },
+            {
+              "id": "AwsSolutions-HTTP2",
+              "reason": "HTTP API does not support access-log format strings the same way as REST API; CloudWatch metrics are enabled by default.",
+            },
+          ],
+        },
+      },
+      "Properties": {
+        "ApiId": {
+          "Ref": "SwimMeetApi82775B04",
+        },
+        "AutoDeploy": true,
+        "StageName": "$default",
+      },
+      "Type": "AWS::ApiGatewayV2::Stage",
+    },
+    "SwimMeetApiGETmeets10966E94": {
+      "Metadata": {
+        "cdk_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "AwsSolutions-APIG4",
+              "reason": "All data routes use the Cognito JWT authorizer; OPTIONS pre-flight routes are intentionally unauthenticated.",
+            },
+            {
+              "id": "AwsSolutions-HTTP2",
+              "reason": "HTTP API does not support access-log format strings the same way as REST API; CloudWatch metrics are enabled by default.",
+            },
+          ],
+        },
+      },
+      "Properties": {
+        "ApiId": {
+          "Ref": "SwimMeetApi82775B04",
+        },
+        "AuthorizationType": "JWT",
+        "AuthorizerId": {
+          "Ref": "SwimMeetApiCognitoAuthorizer9BAB2028",
+        },
+        "RouteKey": "GET /meets",
+        "Target": {
+          "Fn::Join": [
+            "",
+            [
+              "integrations/",
+              {
+                "Ref": "SwimMeetApiGETmeetsListMeetsIntegration65FFDC7F",
+              },
+            ],
+          ],
+        },
+      },
+      "Type": "AWS::ApiGatewayV2::Route",
+    },
+    "SwimMeetApiGETmeetsListMeetsIntegration65FFDC7F": {
+      "Metadata": {
+        "cdk_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "AwsSolutions-APIG4",
+              "reason": "All data routes use the Cognito JWT authorizer; OPTIONS pre-flight routes are intentionally unauthenticated.",
+            },
+            {
+              "id": "AwsSolutions-HTTP2",
+              "reason": "HTTP API does not support access-log format strings the same way as REST API; CloudWatch metrics are enabled by default.",
+            },
+          ],
+        },
+      },
+      "Properties": {
+        "ApiId": {
+          "Ref": "SwimMeetApi82775B04",
+        },
+        "IntegrationType": "AWS_PROXY",
+        "IntegrationUri": {
+          "Fn::GetAtt": [
+            "ListMeetsFn6A3E03CD",
+            "Arn",
+          ],
+        },
+        "PayloadFormatVersion": "2.0",
+      },
+      "Type": "AWS::ApiGatewayV2::Integration",
+    },
+    "SwimMeetApiGETmeetsListMeetsIntegrationPermission68808AFD": {
+      "Metadata": {
+        "cdk_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "AwsSolutions-APIG4",
+              "reason": "All data routes use the Cognito JWT authorizer; OPTIONS pre-flight routes are intentionally unauthenticated.",
+            },
+            {
+              "id": "AwsSolutions-HTTP2",
+              "reason": "HTTP API does not support access-log format strings the same way as REST API; CloudWatch metrics are enabled by default.",
+            },
+          ],
+        },
+      },
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "ListMeetsFn6A3E03CD",
+            "Arn",
+          ],
+        },
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":execute-api:us-east-1:123456789012:",
+              {
+                "Ref": "SwimMeetApi82775B04",
+              },
+              "/*/*/meets",
+            ],
+          ],
+        },
+      },
+      "Type": "AWS::Lambda::Permission",
+    },
+    "SwimMeetApiGETmeetsmeetIdheatsB99C73D8": {
+      "Metadata": {
+        "cdk_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "AwsSolutions-APIG4",
+              "reason": "All data routes use the Cognito JWT authorizer; OPTIONS pre-flight routes are intentionally unauthenticated.",
+            },
+            {
+              "id": "AwsSolutions-HTTP2",
+              "reason": "HTTP API does not support access-log format strings the same way as REST API; CloudWatch metrics are enabled by default.",
+            },
+          ],
+        },
+      },
+      "Properties": {
+        "ApiId": {
+          "Ref": "SwimMeetApi82775B04",
+        },
+        "AuthorizationType": "JWT",
+        "AuthorizerId": {
+          "Ref": "SwimMeetApiCognitoAuthorizer9BAB2028",
+        },
+        "RouteKey": "GET /meets/{meetId}/heats",
+        "Target": {
+          "Fn::Join": [
+            "",
+            [
+              "integrations/",
+              {
+                "Ref": "SwimMeetApiGETmeetsmeetIdheatsGetHeatsIntegration487B03A8",
+              },
+            ],
+          ],
+        },
+      },
+      "Type": "AWS::ApiGatewayV2::Route",
+    },
+    "SwimMeetApiGETmeetsmeetIdheatsGetHeatsIntegration487B03A8": {
+      "Metadata": {
+        "cdk_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "AwsSolutions-APIG4",
+              "reason": "All data routes use the Cognito JWT authorizer; OPTIONS pre-flight routes are intentionally unauthenticated.",
+            },
+            {
+              "id": "AwsSolutions-HTTP2",
+              "reason": "HTTP API does not support access-log format strings the same way as REST API; CloudWatch metrics are enabled by default.",
+            },
+          ],
+        },
+      },
+      "Properties": {
+        "ApiId": {
+          "Ref": "SwimMeetApi82775B04",
+        },
+        "IntegrationType": "AWS_PROXY",
+        "IntegrationUri": {
+          "Fn::GetAtt": [
+            "GetHeatsFnBFAC545E",
+            "Arn",
+          ],
+        },
+        "PayloadFormatVersion": "2.0",
+      },
+      "Type": "AWS::ApiGatewayV2::Integration",
+    },
+    "SwimMeetApiGETmeetsmeetIdheatsGetHeatsIntegrationPermission56360FEF": {
+      "Metadata": {
+        "cdk_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "AwsSolutions-APIG4",
+              "reason": "All data routes use the Cognito JWT authorizer; OPTIONS pre-flight routes are intentionally unauthenticated.",
+            },
+            {
+              "id": "AwsSolutions-HTTP2",
+              "reason": "HTTP API does not support access-log format strings the same way as REST API; CloudWatch metrics are enabled by default.",
+            },
+          ],
+        },
+      },
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "GetHeatsFnBFAC545E",
+            "Arn",
+          ],
+        },
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":execute-api:us-east-1:123456789012:",
+              {
+                "Ref": "SwimMeetApi82775B04",
+              },
+              "/*/*/meets/{meetId}/heats",
+            ],
+          ],
+        },
+      },
+      "Type": "AWS::Lambda::Permission",
+    },
+    "SwimMeetApiGETmeetsmeetIdstatus6513F070": {
+      "Metadata": {
+        "cdk_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "AwsSolutions-APIG4",
+              "reason": "All data routes use the Cognito JWT authorizer; OPTIONS pre-flight routes are intentionally unauthenticated.",
+            },
+            {
+              "id": "AwsSolutions-HTTP2",
+              "reason": "HTTP API does not support access-log format strings the same way as REST API; CloudWatch metrics are enabled by default.",
+            },
+          ],
+        },
+      },
+      "Properties": {
+        "ApiId": {
+          "Ref": "SwimMeetApi82775B04",
+        },
+        "AuthorizationType": "JWT",
+        "AuthorizerId": {
+          "Ref": "SwimMeetApiCognitoAuthorizer9BAB2028",
+        },
+        "RouteKey": "GET /meets/{meetId}/status",
+        "Target": {
+          "Fn::Join": [
+            "",
+            [
+              "integrations/",
+              {
+                "Ref": "SwimMeetApiGETmeetsmeetIdstatusMeetStatusIntegrationE81799C4",
+              },
+            ],
+          ],
+        },
+      },
+      "Type": "AWS::ApiGatewayV2::Route",
+    },
+    "SwimMeetApiGETmeetsmeetIdstatusMeetStatusIntegrationE81799C4": {
+      "Metadata": {
+        "cdk_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "AwsSolutions-APIG4",
+              "reason": "All data routes use the Cognito JWT authorizer; OPTIONS pre-flight routes are intentionally unauthenticated.",
+            },
+            {
+              "id": "AwsSolutions-HTTP2",
+              "reason": "HTTP API does not support access-log format strings the same way as REST API; CloudWatch metrics are enabled by default.",
+            },
+          ],
+        },
+      },
+      "Properties": {
+        "ApiId": {
+          "Ref": "SwimMeetApi82775B04",
+        },
+        "IntegrationType": "AWS_PROXY",
+        "IntegrationUri": {
+          "Fn::GetAtt": [
+            "MeetStatusFn36D9D870",
+            "Arn",
+          ],
+        },
+        "PayloadFormatVersion": "2.0",
+      },
+      "Type": "AWS::ApiGatewayV2::Integration",
+    },
+    "SwimMeetApiGETmeetsmeetIdstatusMeetStatusIntegrationPermissionEC827E74": {
+      "Metadata": {
+        "cdk_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "AwsSolutions-APIG4",
+              "reason": "All data routes use the Cognito JWT authorizer; OPTIONS pre-flight routes are intentionally unauthenticated.",
+            },
+            {
+              "id": "AwsSolutions-HTTP2",
+              "reason": "HTTP API does not support access-log format strings the same way as REST API; CloudWatch metrics are enabled by default.",
+            },
+          ],
+        },
+      },
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "MeetStatusFn36D9D870",
+            "Arn",
+          ],
+        },
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":execute-api:us-east-1:123456789012:",
+              {
+                "Ref": "SwimMeetApi82775B04",
+              },
+              "/*/*/meets/{meetId}/status",
+            ],
+          ],
+        },
+      },
+      "Type": "AWS::Lambda::Permission",
+    },
+    "SwimMeetApiPOSTmeetsuploadE3AAAC73": {
+      "Metadata": {
+        "cdk_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "AwsSolutions-APIG4",
+              "reason": "All data routes use the Cognito JWT authorizer; OPTIONS pre-flight routes are intentionally unauthenticated.",
+            },
+            {
+              "id": "AwsSolutions-HTTP2",
+              "reason": "HTTP API does not support access-log format strings the same way as REST API; CloudWatch metrics are enabled by default.",
+            },
+          ],
+        },
+      },
+      "Properties": {
+        "ApiId": {
+          "Ref": "SwimMeetApi82775B04",
+        },
+        "AuthorizationType": "JWT",
+        "AuthorizerId": {
+          "Ref": "SwimMeetApiCognitoAuthorizer9BAB2028",
+        },
+        "RouteKey": "POST /meets/upload",
+        "Target": {
+          "Fn::Join": [
+            "",
+            [
+              "integrations/",
+              {
+                "Ref": "SwimMeetApiPOSTmeetsuploadUploadIntegration3F06134F",
+              },
+            ],
+          ],
+        },
+      },
+      "Type": "AWS::ApiGatewayV2::Route",
+    },
+    "SwimMeetApiPOSTmeetsuploadUploadIntegration3F06134F": {
+      "Metadata": {
+        "cdk_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "AwsSolutions-APIG4",
+              "reason": "All data routes use the Cognito JWT authorizer; OPTIONS pre-flight routes are intentionally unauthenticated.",
+            },
+            {
+              "id": "AwsSolutions-HTTP2",
+              "reason": "HTTP API does not support access-log format strings the same way as REST API; CloudWatch metrics are enabled by default.",
+            },
+          ],
+        },
+      },
+      "Properties": {
+        "ApiId": {
+          "Ref": "SwimMeetApi82775B04",
+        },
+        "IntegrationType": "AWS_PROXY",
+        "IntegrationUri": {
+          "Fn::GetAtt": [
+            "UploadFnEA455C04",
+            "Arn",
+          ],
+        },
+        "PayloadFormatVersion": "2.0",
+      },
+      "Type": "AWS::ApiGatewayV2::Integration",
+    },
+    "SwimMeetApiPOSTmeetsuploadUploadIntegrationPermissionB6785F7C": {
+      "Metadata": {
+        "cdk_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "AwsSolutions-APIG4",
+              "reason": "All data routes use the Cognito JWT authorizer; OPTIONS pre-flight routes are intentionally unauthenticated.",
+            },
+            {
+              "id": "AwsSolutions-HTTP2",
+              "reason": "HTTP API does not support access-log format strings the same way as REST API; CloudWatch metrics are enabled by default.",
+            },
+          ],
+        },
+      },
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "UploadFnEA455C04",
+            "Arn",
+          ],
+        },
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":execute-api:us-east-1:123456789012:",
+              {
+                "Ref": "SwimMeetApi82775B04",
+              },
+              "/*/*/meets/upload",
+            ],
+          ],
+        },
+      },
+      "Type": "AWS::Lambda::Permission",
+    },
+    "UploadFnEA455C04": {
+      "DependsOn": [
+        "UploadFnServiceRoleDefaultPolicy1F739523",
+        "UploadFnServiceRoleBC442095",
+      ],
+      "Metadata": {
+        "cdk_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "AwsSolutions-IAM4",
+              "reason": "AWSLambdaBasicExecutionRole for CloudWatch logging.",
+            },
+            {
+              "id": "AwsSolutions-IAM5",
+              "reason": "DynamoDB and S3 permissions are scoped to the specific table/bucket.",
+            },
+          ],
+        },
+      },
+      "Properties": {
+        "Architectures": [
+          "arm64",
+        ],
+        "Code": {
+          "S3Bucket": "cdk-hnb659fds-assets-123456789012-us-east-1",
+          "S3Key": "4fd39e294a803854ee777f168118adaf76d9a87e34ae6e87f94d93051b94c840.zip",
+        },
+        "Description": "POST /meets/upload — generates presigned S3 PUT URL (write scope required)",
+        "Environment": {
+          "Variables": {
+            "NODE_OPTIONS": "--enable-source-maps",
+            "RAW_PDF_BUCKET_NAME": {
+              "Fn::ImportValue": "TestStage-StorageStack:ExportsOutputRefRawPdfBucket6B2950B21144D893",
+            },
+            "TABLE_NAME": {
+              "Fn::ImportValue": "TestStage-StorageStack:ExportsOutputRefMeetsTable194C39082FACE429",
+            },
+          },
+        },
+        "FunctionName": "swim-meet-api-upload-TestStage-ApiStack",
+        "Handler": "index.handler",
+        "MemorySize": 256,
+        "Role": {
+          "Fn::GetAtt": [
+            "UploadFnServiceRoleBC442095",
+            "Arn",
+          ],
+        },
+        "Runtime": "nodejs22.x",
+        "Timeout": 30,
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "UploadFnServiceRoleBC442095": {
+      "Metadata": {
+        "cdk_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "AwsSolutions-IAM4",
+              "reason": "AWSLambdaBasicExecutionRole for CloudWatch logging.",
+            },
+            {
+              "id": "AwsSolutions-IAM5",
+              "reason": "DynamoDB and S3 permissions are scoped to the specific table/bucket.",
+            },
+          ],
+        },
+      },
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "UploadFnServiceRoleDefaultPolicy1F739523": {
+      "Metadata": {
+        "cdk_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "AwsSolutions-IAM4",
+              "reason": "AWSLambdaBasicExecutionRole for CloudWatch logging.",
+            },
+            {
+              "id": "AwsSolutions-IAM5",
+              "reason": "DynamoDB and S3 permissions are scoped to the specific table/bucket.",
+            },
+          ],
+        },
+      },
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "s3:PutObject",
+                "s3:PutObjectLegalHold",
+                "s3:PutObjectRetention",
+                "s3:PutObjectTagging",
+                "s3:PutObjectVersionTagging",
+                "s3:Abort*",
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    {
+                      "Fn::ImportValue": "TestStage-StorageStack:ExportsOutputFnGetAttRawPdfBucket6B2950B2Arn1CBAE423",
+                    },
+                    "/*",
+                  ],
+                ],
+              },
+            },
+            {
+              "Action": [
+                "kms:Encrypt",
+                "kms:ReEncrypt*",
+                "kms:GenerateDataKey*",
+                "kms:Decrypt",
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::ImportValue": "TestStage-StorageStack:ExportsOutputFnGetAttEncryptionKey1B843E66Arn91172964",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "UploadFnServiceRoleDefaultPolicy1F739523",
+        "Roles": [
+          {
+            "Ref": "UploadFnServiceRoleBC442095",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+  },
+  "Rules": {
+    "CheckBootstrapVersion": {
+      "Assertions": [
+        {
+          "Assert": {
+            "Fn::Not": [
+              {
+                "Fn::Contains": [
+                  [
+                    "1",
+                    "2",
+                    "3",
+                    "4",
+                    "5",
+                  ],
+                  {
+                    "Ref": "BootstrapVersion",
+                  },
+                ],
+              },
+            ],
+          },
+          "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI.",
+        },
+      ],
+    },
+  },
+}
+`;
+
 exports[`CognitoStack snapshot 1`] = `
 {
+  "Outputs": {
+    "ExportsOutputRefUserPool6BA7E5F296FD7236": {
+      "Export": {
+        "Name": "TestStage-CognitoStack:ExportsOutputRefUserPool6BA7E5F296FD7236",
+      },
+      "Value": {
+        "Ref": "UserPool6BA7E5F2",
+      },
+    },
+    "ExportsOutputRefUserPoolSpaClient6B560FFA03368753": {
+      "Export": {
+        "Name": "TestStage-CognitoStack:ExportsOutputRefUserPoolSpaClient6B560FFA03368753",
+      },
+      "Value": {
+        "Ref": "UserPoolSpaClient6B560FFA",
+      },
+    },
+  },
   "Parameters": {
     "BootstrapVersion": {
       "Default": "/cdk-bootstrap/hnb659fds/version",
@@ -236,6 +1417,2130 @@ exports[`CognitoStack snapshot 1`] = `
         },
       },
       "Type": "AWS::Cognito::UserPoolDomain",
+    },
+  },
+  "Rules": {
+    "CheckBootstrapVersion": {
+      "Assertions": [
+        {
+          "Assert": {
+            "Fn::Not": [
+              {
+                "Fn::Contains": [
+                  [
+                    "1",
+                    "2",
+                    "3",
+                    "4",
+                    "5",
+                  ],
+                  {
+                    "Ref": "BootstrapVersion",
+                  },
+                ],
+              },
+            ],
+          },
+          "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI.",
+        },
+      ],
+    },
+  },
+}
+`;
+
+exports[`ProcessingStack snapshot 1`] = `
+{
+  "Parameters": {
+    "BootstrapVersion": {
+      "Default": "/cdk-bootstrap/hnb659fds/version",
+      "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]",
+      "Type": "AWS::SSM::Parameter::Value<String>",
+    },
+  },
+  "Resources": {
+    "AgentAliasIdParam55ABE301": {
+      "Properties": {
+        "Description": "Bedrock Agent alias ID (live)",
+        "Name": "/swim-meet/test/processing/bedrock-agent-alias-id",
+        "Type": "String",
+        "Value": {
+          "Fn::GetAtt": [
+            "HeatSheetAgentAlias",
+            "AgentAliasId",
+          ],
+        },
+      },
+      "Type": "AWS::SSM::Parameter",
+    },
+    "AgentIdParam49DFB303": {
+      "Properties": {
+        "Description": "Bedrock Agent ID for the heat sheet extractor",
+        "Name": "/swim-meet/test/processing/bedrock-agent-id",
+        "Type": "String",
+        "Value": {
+          "Fn::GetAtt": [
+            "HeatSheetAgent",
+            "AgentId",
+          ],
+        },
+      },
+      "Type": "AWS::SSM::Parameter",
+    },
+    "BedrockAgentRole7C982E0C": {
+      "Metadata": {
+        "cdk_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "AwsSolutions-IAM5",
+              "reason": "Bedrock agent role resource wildcard covers cross-region inference profile ARN patterns for the configured model.",
+            },
+          ],
+        },
+      },
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Condition": {
+                "ArnLike": {
+                  "aws:SourceArn": "arn:aws:bedrock:us-east-1:123456789012:agent/*",
+                },
+                "StringEquals": {
+                  "aws:SourceAccount": "123456789012",
+                },
+              },
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "bedrock.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "Policies": [
+          {
+            "PolicyDocument": {
+              "Statement": [
+                {
+                  "Action": [
+                    "bedrock:InvokeModel",
+                    "bedrock:InvokeModelWithResponseStream",
+                  ],
+                  "Effect": "Allow",
+                  "Resource": [
+                    "arn:aws:bedrock:us-east-1::foundation-model/amazon.nova-lite-v1:0",
+                    "arn:aws:bedrock:*::foundation-model/amazon.nova-lite-v1:0",
+                  ],
+                },
+              ],
+              "Version": "2012-10-17",
+            },
+            "PolicyName": "BedrockInvokeModel",
+          },
+        ],
+        "RoleName": "swim-meet-bedrock-agent-TestStage-ProcessingStack",
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "ExtractWithBedrockFn5C576CE4": {
+      "DependsOn": [
+        "ExtractWithBedrockFnServiceRoleDefaultPolicyCBB106D2",
+        "ExtractWithBedrockFnServiceRole471906F1",
+      ],
+      "Metadata": {
+        "cdk_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "AwsSolutions-IAM4",
+              "reason": "AWSLambdaBasicExecutionRole for CloudWatch logging.",
+            },
+            {
+              "id": "AwsSolutions-IAM5",
+              "reason": "S3 read grant scoped to the raw-PDF bucket by CDK.",
+            },
+          ],
+        },
+      },
+      "Properties": {
+        "Architectures": [
+          "arm64",
+        ],
+        "Code": {
+          "S3Bucket": "cdk-hnb659fds-assets-123456789012-us-east-1",
+          "S3Key": "0c57458363fa1d8ee46e074d69496b09ca835b964817edcd85133c6d8930e880.zip",
+        },
+        "Description": "Step Functions task: invokes Bedrock Agent (Code Interpreter) to extract heat data",
+        "Environment": {
+          "Variables": {
+            "AGENT_ALIAS_ID": {
+              "Fn::GetAtt": [
+                "HeatSheetAgentAlias",
+                "AgentAliasId",
+              ],
+            },
+            "AGENT_ID": {
+              "Fn::GetAtt": [
+                "HeatSheetAgent",
+                "AgentId",
+              ],
+            },
+            "NODE_OPTIONS": "--enable-source-maps",
+            "TABLE_NAME": {
+              "Fn::ImportValue": "TestStage-StorageStack:ExportsOutputRefMeetsTable194C39082FACE429",
+            },
+          },
+        },
+        "FunctionName": "swim-meet-extract-bedrock-TestStage-ProcessingStack",
+        "Handler": "index.handler",
+        "MemorySize": 1024,
+        "Role": {
+          "Fn::GetAtt": [
+            "ExtractWithBedrockFnServiceRole471906F1",
+            "Arn",
+          ],
+        },
+        "Runtime": "nodejs22.x",
+        "Timeout": 900,
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "ExtractWithBedrockFnServiceRole471906F1": {
+      "Metadata": {
+        "cdk_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "AwsSolutions-IAM4",
+              "reason": "AWSLambdaBasicExecutionRole for CloudWatch logging.",
+            },
+            {
+              "id": "AwsSolutions-IAM5",
+              "reason": "S3 read grant scoped to the raw-PDF bucket by CDK.",
+            },
+          ],
+        },
+      },
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "ExtractWithBedrockFnServiceRoleDefaultPolicyCBB106D2": {
+      "Metadata": {
+        "cdk_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "AwsSolutions-IAM4",
+              "reason": "AWSLambdaBasicExecutionRole for CloudWatch logging.",
+            },
+            {
+              "id": "AwsSolutions-IAM5",
+              "reason": "S3 read grant scoped to the raw-PDF bucket by CDK.",
+            },
+          ],
+        },
+      },
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "s3:GetObject*",
+                "s3:GetBucket*",
+                "s3:List*",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::ImportValue": "TestStage-StorageStack:ExportsOutputFnGetAttRawPdfBucket6B2950B2Arn1CBAE423",
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::ImportValue": "TestStage-StorageStack:ExportsOutputFnGetAttRawPdfBucket6B2950B2Arn1CBAE423",
+                      },
+                      "/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            {
+              "Action": [
+                "kms:Decrypt",
+                "kms:DescribeKey",
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::ImportValue": "TestStage-StorageStack:ExportsOutputFnGetAttEncryptionKey1B843E66Arn91172964",
+              },
+            },
+            {
+              "Action": [
+                "bedrock:InvokeAgent",
+                "bedrock:InvokeInlineAgent",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:bedrock:us-east-1:123456789012:agent/",
+                      {
+                        "Fn::GetAtt": [
+                          "HeatSheetAgent",
+                          "AgentId",
+                        ],
+                      },
+                    ],
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:bedrock:us-east-1:123456789012:agent-alias/",
+                      {
+                        "Fn::GetAtt": [
+                          "HeatSheetAgent",
+                          "AgentId",
+                        ],
+                      },
+                      "/",
+                      {
+                        "Fn::GetAtt": [
+                          "HeatSheetAgentAlias",
+                          "AgentAliasId",
+                        ],
+                      },
+                    ],
+                  ],
+                },
+              ],
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "ExtractWithBedrockFnServiceRoleDefaultPolicyCBB106D2",
+        "Roles": [
+          {
+            "Ref": "ExtractWithBedrockFnServiceRole471906F1",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "HeatSheetAgent": {
+      "Properties": {
+        "ActionGroups": [
+          {
+            "ActionGroupName": "CodeInterpreter",
+            "ActionGroupState": "ENABLED",
+            "ParentActionGroupSignature": "AMAZON.CodeInterpreter",
+          },
+          {
+            "ActionGroupName": "UserInput",
+            "ActionGroupState": "ENABLED",
+            "ParentActionGroupSignature": "AMAZON.UserInput",
+          },
+        ],
+        "AgentName": "swim-meet-heat-extractor-TestStage-ProcessingStack",
+        "AgentResourceRoleArn": {
+          "Fn::GetAtt": [
+            "BedrockAgentRole7C982E0C",
+            "Arn",
+          ],
+        },
+        "AutoPrepare": true,
+        "Description": "Extracts structured heat data from swim meet PDF heat sheets using Code Interpreter",
+        "FoundationModel": "amazon.nova-lite-v1:0",
+        "Instruction": "You are a swim meet data extraction specialist.
+You receive PDF documents containing swim meet heat sheets.
+Use the Code Interpreter to read, parse, and extract all structured data from the PDF.
+
+Your task:
+1. Read the attached PDF file using Python (pdfplumber or pdfminer are available).
+2. Parse every event, heat, lane, swimmer name, school, seed time, and relay designation.
+3. Handle multi-column layouts carefully — ensure columns are not interleaved.
+4. Return ONLY a valid JSON array of heat objects. No prose, no markdown fences.
+
+Each heat object schema:
+{
+  "id": "E001-H001",
+  "event": 1,
+  "event_name": "Girls 200 Yard Medley Relay",
+  "heat": 1,
+  "is_relay": true,
+  "entries": [
+    { "lane": 1, "school": "Andover", "relay": "A", "seed_time": "2:05.43",
+      "swimmers": ["Last, First", "Last, First", "Last, First", "Last, First"] },
+    { "lane": 2, "blank": true }
+  ]
+}
+
+For individual events each entry has: "name", "age" (string or null), "seed_time".
+Seed times prefixed with "X" are exhibition — keep the X prefix.
+"NT" means no seed time. Empty lanes: { "lane": N, "blank": true }.",
+      },
+      "Type": "AWS::Bedrock::Agent",
+    },
+    "HeatSheetAgentAlias": {
+      "DependsOn": [
+        "HeatSheetAgent",
+      ],
+      "Properties": {
+        "AgentAliasName": "live",
+        "AgentId": {
+          "Fn::GetAtt": [
+            "HeatSheetAgent",
+            "AgentId",
+          ],
+        },
+        "Description": "Live alias for the heat sheet extractor agent",
+      },
+      "Type": "AWS::Bedrock::AgentAlias",
+    },
+    "HeatSheetProcessingB66DCE4D": {
+      "DeletionPolicy": "Delete",
+      "DependsOn": [
+        "HeatSheetProcessingRoleDefaultPolicy78D974D4",
+        "HeatSheetProcessingRole6DAC497F",
+      ],
+      "Metadata": {
+        "cdk_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "AwsSolutions-SF1",
+              "reason": "Logging is enabled at ERROR level; ALL-level logging can be enabled in production hardening.",
+            },
+            {
+              "id": "AwsSolutions-IAM5",
+              "reason": "Step Functions execution role wildcards scoped to Lambda functions by CDK grants.",
+            },
+          ],
+        },
+      },
+      "Properties": {
+        "DefinitionString": {
+          "Fn::Join": [
+            "",
+            [
+              "{"StartAt":"InitializeMeet","States":{"InitializeMeet":{"Next":"ExtractWithBedrockAgent","Retry":[{"ErrorEquals":["Lambda.ClientExecutionTimeoutException","Lambda.ServiceException","Lambda.AWSLambdaException","Lambda.SdkClientException"],"IntervalSeconds":2,"MaxAttempts":6,"BackoffRate":2}],"Catch":[{"ErrorEquals":["States.ALL"],"ResultPath":"$","Next":"UpdateStatusFailed"}],"Type":"Task","Comment":"Create MEET#META record with processingStatus=PROCESSING","OutputPath":"$.Payload","Resource":"arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":states:::lambda:invoke","Parameters":{"FunctionName":"",
+              {
+                "Fn::GetAtt": [
+                  "InitializeMeetFn1B1064EF",
+                  "Arn",
+                ],
+              },
+              "","Payload.$":"$"}},"ExtractWithBedrockAgent":{"Next":"ValidateExtraction","Retry":[{"ErrorEquals":["Lambda.ClientExecutionTimeoutException","Lambda.ServiceException","Lambda.AWSLambdaException","Lambda.SdkClientException"],"IntervalSeconds":2,"MaxAttempts":6,"BackoffRate":2},{"ErrorEquals":["ThrottlingException","ServiceUnavailableException"],"IntervalSeconds":30,"MaxAttempts":3,"BackoffRate":2}],"Catch":[{"ErrorEquals":["States.ALL"],"ResultPath":"$","Next":"UpdateStatusFailed"}],"Type":"Task","Comment":"Invoke Bedrock Agent with Code Interpreter to parse PDF and extract heats","TimeoutSeconds":1200,"OutputPath":"$.Payload","Resource":"arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":states:::lambda:invoke","Parameters":{"FunctionName":"",
+              {
+                "Fn::GetAtt": [
+                  "ExtractWithBedrockFn5C576CE4",
+                  "Arn",
+                ],
+              },
+              "","Payload.$":"$"}},"ValidateExtraction":{"Next":"StoreHeats","Retry":[{"ErrorEquals":["Lambda.ClientExecutionTimeoutException","Lambda.ServiceException","Lambda.AWSLambdaException","Lambda.SdkClientException"],"IntervalSeconds":2,"MaxAttempts":6,"BackoffRate":2}],"Catch":[{"ErrorEquals":["States.ALL"],"ResultPath":"$","Next":"UpdateStatusFailed"}],"Type":"Task","Comment":"Validate extracted heats against canonical schema","OutputPath":"$.Payload","Resource":"arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":states:::lambda:invoke","Parameters":{"FunctionName":"",
+              {
+                "Fn::GetAtt": [
+                  "ValidateExtractionFn4CD1344B",
+                  "Arn",
+                ],
+              },
+              "","Payload.$":"$"}},"StoreHeats":{"Next":"UpdateStatusReady","Retry":[{"ErrorEquals":["Lambda.ClientExecutionTimeoutException","Lambda.ServiceException","Lambda.AWSLambdaException","Lambda.SdkClientException"],"IntervalSeconds":2,"MaxAttempts":6,"BackoffRate":2}],"Catch":[{"ErrorEquals":["States.ALL"],"ResultPath":"$","Next":"UpdateStatusFailed"}],"Type":"Task","Comment":"Batch-write heats to DynamoDB and update META to READY","OutputPath":"$.Payload","Resource":"arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":states:::lambda:invoke","Parameters":{"FunctionName":"",
+              {
+                "Fn::GetAtt": [
+                  "StoreHeatsFnCDAD62C9",
+                  "Arn",
+                ],
+              },
+              "","Payload.$":"$"}},"UpdateStatusReady":{"End":true,"Retry":[{"ErrorEquals":["Lambda.ClientExecutionTimeoutException","Lambda.ServiceException","Lambda.AWSLambdaException","Lambda.SdkClientException"],"IntervalSeconds":2,"MaxAttempts":6,"BackoffRate":2}],"Type":"Task","Comment":"Mark meet as READY","OutputPath":"$.Payload","Resource":"arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":states:::lambda:invoke","Parameters":{"FunctionName":"",
+              {
+                "Fn::GetAtt": [
+                  "UpdateMeetStatusFn964CD653",
+                  "Arn",
+                ],
+              },
+              "","Payload":{"meetId.$":"$.meetId","targetStatus":"READY"}}},"UpdateStatusFailed":{"End":true,"Retry":[{"ErrorEquals":["Lambda.ClientExecutionTimeoutException","Lambda.ServiceException","Lambda.AWSLambdaException","Lambda.SdkClientException"],"IntervalSeconds":2,"MaxAttempts":6,"BackoffRate":2}],"Type":"Task","Comment":"Mark meet as FAILED and record error details","OutputPath":"$.Payload","Resource":"arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":states:::lambda:invoke","Parameters":{"FunctionName":"",
+              {
+                "Fn::GetAtt": [
+                  "UpdateMeetStatusFn964CD653",
+                  "Arn",
+                ],
+              },
+              "","Payload":{"meetId.$":"$$.Execution.Input.meetId","targetStatus":"FAILED","Cause.$":"$.Cause","Error.$":"$.Error"}}}},"TimeoutSeconds":3600}",
+            ],
+          ],
+        },
+        "LoggingConfiguration": {
+          "Destinations": [
+            {
+              "CloudWatchLogsLogGroup": {
+                "LogGroupArn": {
+                  "Fn::GetAtt": [
+                    "StateMachineLogGroup15B91BCB",
+                    "Arn",
+                  ],
+                },
+              },
+            },
+          ],
+          "IncludeExecutionData": false,
+          "Level": "ERROR",
+        },
+        "RoleArn": {
+          "Fn::GetAtt": [
+            "HeatSheetProcessingRole6DAC497F",
+            "Arn",
+          ],
+        },
+        "StateMachineName": "swim-meet-processing-TestStage-ProcessingStack",
+        "StateMachineType": "STANDARD",
+        "TracingConfiguration": {
+          "Enabled": true,
+        },
+      },
+      "Type": "AWS::StepFunctions::StateMachine",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "HeatSheetProcessingRole6DAC497F": {
+      "Metadata": {
+        "cdk_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "AwsSolutions-SF1",
+              "reason": "Logging is enabled at ERROR level; ALL-level logging can be enabled in production hardening.",
+            },
+            {
+              "id": "AwsSolutions-IAM5",
+              "reason": "Step Functions execution role wildcards scoped to Lambda functions by CDK grants.",
+            },
+          ],
+        },
+      },
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "states.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "HeatSheetProcessingRoleDefaultPolicy78D974D4": {
+      "Metadata": {
+        "cdk_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "AwsSolutions-SF1",
+              "reason": "Logging is enabled at ERROR level; ALL-level logging can be enabled in production hardening.",
+            },
+            {
+              "id": "AwsSolutions-IAM5",
+              "reason": "Step Functions execution role wildcards scoped to Lambda functions by CDK grants.",
+            },
+          ],
+        },
+      },
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "lambda:InvokeFunction",
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "InitializeMeetFn1B1064EF",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "InitializeMeetFn1B1064EF",
+                          "Arn",
+                        ],
+                      },
+                      ":*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            {
+              "Action": "lambda:InvokeFunction",
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "ExtractWithBedrockFn5C576CE4",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "ExtractWithBedrockFn5C576CE4",
+                          "Arn",
+                        ],
+                      },
+                      ":*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            {
+              "Action": "lambda:InvokeFunction",
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "ValidateExtractionFn4CD1344B",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "ValidateExtractionFn4CD1344B",
+                          "Arn",
+                        ],
+                      },
+                      ":*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            {
+              "Action": "lambda:InvokeFunction",
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "StoreHeatsFnCDAD62C9",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "StoreHeatsFnCDAD62C9",
+                          "Arn",
+                        ],
+                      },
+                      ":*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            {
+              "Action": "lambda:InvokeFunction",
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "UpdateMeetStatusFn964CD653",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "UpdateMeetStatusFn964CD653",
+                          "Arn",
+                        ],
+                      },
+                      ":*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            {
+              "Action": [
+                "logs:CreateLogDelivery",
+                "logs:GetLogDelivery",
+                "logs:UpdateLogDelivery",
+                "logs:DeleteLogDelivery",
+                "logs:ListLogDeliveries",
+                "logs:PutResourcePolicy",
+                "logs:DescribeResourcePolicies",
+                "logs:DescribeLogGroups",
+              ],
+              "Effect": "Allow",
+              "Resource": "*",
+            },
+            {
+              "Action": [
+                "xray:PutTraceSegments",
+                "xray:PutTelemetryRecords",
+                "xray:GetSamplingRules",
+                "xray:GetSamplingTargets",
+              ],
+              "Effect": "Allow",
+              "Resource": "*",
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "HeatSheetProcessingRoleDefaultPolicy78D974D4",
+        "Roles": [
+          {
+            "Ref": "HeatSheetProcessingRole6DAC497F",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "InitializeMeetFn1B1064EF": {
+      "DependsOn": [
+        "InitializeMeetFnServiceRoleDefaultPolicy4C8C4F52",
+        "InitializeMeetFnServiceRoleADB1583D",
+      ],
+      "Metadata": {
+        "cdk_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "AwsSolutions-IAM4",
+              "reason": "AWSLambdaBasicExecutionRole for CloudWatch logging.",
+            },
+          ],
+        },
+      },
+      "Properties": {
+        "Architectures": [
+          "arm64",
+        ],
+        "Code": {
+          "S3Bucket": "cdk-hnb659fds-assets-123456789012-us-east-1",
+          "S3Key": "e24171c34c032120ad5315d7877b26da91cfd4b78936f789596a7233fd40c6e9.zip",
+        },
+        "Description": "Step Functions task: creates the MEET#META DynamoDB record",
+        "Environment": {
+          "Variables": {
+            "NODE_OPTIONS": "--enable-source-maps",
+            "TABLE_NAME": {
+              "Fn::ImportValue": "TestStage-StorageStack:ExportsOutputRefMeetsTable194C39082FACE429",
+            },
+          },
+        },
+        "FunctionName": "swim-meet-initialize-TestStage-ProcessingStack",
+        "Handler": "index.handler",
+        "MemorySize": 512,
+        "Role": {
+          "Fn::GetAtt": [
+            "InitializeMeetFnServiceRoleADB1583D",
+            "Arn",
+          ],
+        },
+        "Runtime": "nodejs22.x",
+        "Timeout": 300,
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "InitializeMeetFnServiceRoleADB1583D": {
+      "Metadata": {
+        "cdk_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "AwsSolutions-IAM4",
+              "reason": "AWSLambdaBasicExecutionRole for CloudWatch logging.",
+            },
+          ],
+        },
+      },
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "InitializeMeetFnServiceRoleDefaultPolicy4C8C4F52": {
+      "Metadata": {
+        "cdk_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "AwsSolutions-IAM4",
+              "reason": "AWSLambdaBasicExecutionRole for CloudWatch logging.",
+            },
+          ],
+        },
+      },
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "dynamodb:PutItem",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::ImportValue": "TestStage-StorageStack:ExportsOutputFnGetAttMeetsTable194C3908ArnAC801690",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "InitializeMeetFnServiceRoleDefaultPolicy4C8C4F52",
+        "Roles": [
+          {
+            "Ref": "InitializeMeetFnServiceRoleADB1583D",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "PdfUploadRule6504FE60": {
+      "Properties": {
+        "Description": "Triggers processing pipeline when a PDF is uploaded to the raw-PDF bucket",
+        "EventPattern": {
+          "detail": {
+            "bucket": {
+              "name": [
+                {
+                  "Fn::ImportValue": "TestStage-StorageStack:ExportsOutputRefRawPdfBucket6B2950B21144D893",
+                },
+              ],
+            },
+            "object": {
+              "key": [
+                {
+                  "suffix": ".pdf",
+                },
+              ],
+            },
+          },
+          "detail-type": [
+            "Object Created",
+          ],
+          "source": [
+            "aws.s3",
+          ],
+        },
+        "Name": "swim-meet-pdf-upload-TestStage-ProcessingStack",
+        "State": "ENABLED",
+        "Targets": [
+          {
+            "Arn": {
+              "Fn::GetAtt": [
+                "ProcessingQueue6DC600C3",
+                "Arn",
+              ],
+            },
+            "Id": "Target0",
+          },
+        ],
+      },
+      "Type": "AWS::Events::Rule",
+    },
+    "ProcessingDlq24E71A3D": {
+      "DeletionPolicy": "Delete",
+      "Properties": {
+        "MessageRetentionPeriod": 1209600,
+        "QueueName": "swim-meet-processing-dlq-TestStage-ProcessingStack",
+        "SqsManagedSseEnabled": true,
+      },
+      "Type": "AWS::SQS::Queue",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "ProcessingInitiatorFnCAC404C8": {
+      "DependsOn": [
+        "ProcessingInitiatorFnServiceRoleDefaultPolicy1EB638CC",
+        "ProcessingInitiatorFnServiceRole353073F6",
+      ],
+      "Metadata": {
+        "cdk_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "AwsSolutions-IAM4",
+              "reason": "AWSLambdaBasicExecutionRole is the minimal managed policy for Lambda CloudWatch logging.",
+            },
+            {
+              "id": "AwsSolutions-IAM5",
+              "reason": "Lambda execution role wildcards are scoped to the state machine and SQS queue arns by CDK grants.",
+            },
+          ],
+        },
+      },
+      "Properties": {
+        "Architectures": [
+          "arm64",
+        ],
+        "Code": {
+          "S3Bucket": "cdk-hnb659fds-assets-123456789012-us-east-1",
+          "S3Key": "94bb51dbf9157e6f42680abd9eabcb4b099b938f874983e6197943f1cc5fb519.zip",
+        },
+        "Description": "Reads SQS messages from S3/EventBridge and starts Step Functions executions",
+        "Environment": {
+          "Variables": {
+            "NODE_OPTIONS": "--enable-source-maps",
+            "STATE_MACHINE_ARN": {
+              "Ref": "HeatSheetProcessingB66DCE4D",
+            },
+            "TABLE_NAME": {
+              "Fn::ImportValue": "TestStage-StorageStack:ExportsOutputRefMeetsTable194C39082FACE429",
+            },
+          },
+        },
+        "FunctionName": "swim-meet-initiator-TestStage-ProcessingStack",
+        "Handler": "index.handler",
+        "MemorySize": 512,
+        "Role": {
+          "Fn::GetAtt": [
+            "ProcessingInitiatorFnServiceRole353073F6",
+            "Arn",
+          ],
+        },
+        "Runtime": "nodejs22.x",
+        "Timeout": 300,
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "ProcessingInitiatorFnServiceRole353073F6": {
+      "Metadata": {
+        "cdk_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "AwsSolutions-IAM4",
+              "reason": "AWSLambdaBasicExecutionRole is the minimal managed policy for Lambda CloudWatch logging.",
+            },
+            {
+              "id": "AwsSolutions-IAM5",
+              "reason": "Lambda execution role wildcards are scoped to the state machine and SQS queue arns by CDK grants.",
+            },
+          ],
+        },
+      },
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "ProcessingInitiatorFnServiceRoleDefaultPolicy1EB638CC": {
+      "Metadata": {
+        "cdk_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "AwsSolutions-IAM4",
+              "reason": "AWSLambdaBasicExecutionRole is the minimal managed policy for Lambda CloudWatch logging.",
+            },
+            {
+              "id": "AwsSolutions-IAM5",
+              "reason": "Lambda execution role wildcards are scoped to the state machine and SQS queue arns by CDK grants.",
+            },
+          ],
+        },
+      },
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "states:StartExecution",
+              "Effect": "Allow",
+              "Resource": {
+                "Ref": "HeatSheetProcessingB66DCE4D",
+              },
+            },
+            {
+              "Action": [
+                "sqs:ReceiveMessage",
+                "sqs:ChangeMessageVisibility",
+                "sqs:GetQueueUrl",
+                "sqs:DeleteMessage",
+                "sqs:GetQueueAttributes",
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::GetAtt": [
+                  "ProcessingQueue6DC600C3",
+                  "Arn",
+                ],
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "ProcessingInitiatorFnServiceRoleDefaultPolicy1EB638CC",
+        "Roles": [
+          {
+            "Ref": "ProcessingInitiatorFnServiceRole353073F6",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "ProcessingInitiatorFnSqsEventSourceTestStageProcessingStackProcessingQueueABE4C5A171F7153F": {
+      "Metadata": {
+        "cdk_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "AwsSolutions-IAM4",
+              "reason": "AWSLambdaBasicExecutionRole is the minimal managed policy for Lambda CloudWatch logging.",
+            },
+            {
+              "id": "AwsSolutions-IAM5",
+              "reason": "Lambda execution role wildcards are scoped to the state machine and SQS queue arns by CDK grants.",
+            },
+          ],
+        },
+      },
+      "Properties": {
+        "BatchSize": 1,
+        "EventSourceArn": {
+          "Fn::GetAtt": [
+            "ProcessingQueue6DC600C3",
+            "Arn",
+          ],
+        },
+        "FunctionName": {
+          "Ref": "ProcessingInitiatorFnCAC404C8",
+        },
+        "FunctionResponseTypes": [
+          "ReportBatchItemFailures",
+        ],
+      },
+      "Type": "AWS::Lambda::EventSourceMapping",
+    },
+    "ProcessingQueue6DC600C3": {
+      "DeletionPolicy": "Delete",
+      "Properties": {
+        "QueueName": "swim-meet-processing-TestStage-ProcessingStack",
+        "RedrivePolicy": {
+          "deadLetterTargetArn": {
+            "Fn::GetAtt": [
+              "ProcessingDlq24E71A3D",
+              "Arn",
+            ],
+          },
+          "maxReceiveCount": 3,
+        },
+        "SqsManagedSseEnabled": true,
+        "VisibilityTimeout": 360,
+      },
+      "Type": "AWS::SQS::Queue",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "ProcessingQueuePolicyDDFFDBBA": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "sqs:SendMessage",
+                "sqs:GetQueueAttributes",
+                "sqs:GetQueueUrl",
+              ],
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {
+                    "Fn::GetAtt": [
+                      "PdfUploadRule6504FE60",
+                      "Arn",
+                    ],
+                  },
+                },
+              },
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "events.amazonaws.com",
+              },
+              "Resource": {
+                "Fn::GetAtt": [
+                  "ProcessingQueue6DC600C3",
+                  "Arn",
+                ],
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "Queues": [
+          {
+            "Ref": "ProcessingQueue6DC600C3",
+          },
+        ],
+      },
+      "Type": "AWS::SQS::QueuePolicy",
+    },
+    "StateMachineArnParam7E1F013F": {
+      "Properties": {
+        "Description": "Step Functions state machine ARN for heat sheet processing",
+        "Name": "/swim-meet/test/processing/state-machine-arn",
+        "Type": "String",
+        "Value": {
+          "Ref": "HeatSheetProcessingB66DCE4D",
+        },
+      },
+      "Type": "AWS::SSM::Parameter",
+    },
+    "StateMachineLogGroup15B91BCB": {
+      "DeletionPolicy": "Delete",
+      "Properties": {
+        "LogGroupName": "/aws/states/swim-meet-processing-TestStage-ProcessingStack",
+        "RetentionInDays": 30,
+      },
+      "Type": "AWS::Logs::LogGroup",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "StoreHeatsFnCDAD62C9": {
+      "DependsOn": [
+        "StoreHeatsFnServiceRoleDefaultPolicy10696113",
+        "StoreHeatsFnServiceRole098B8FA2",
+      ],
+      "Metadata": {
+        "cdk_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "AwsSolutions-IAM4",
+              "reason": "AWSLambdaBasicExecutionRole for CloudWatch logging.",
+            },
+          ],
+        },
+      },
+      "Properties": {
+        "Architectures": [
+          "arm64",
+        ],
+        "Code": {
+          "S3Bucket": "cdk-hnb659fds-assets-123456789012-us-east-1",
+          "S3Key": "df27c308a944565dbf99cf695eec7d87a92854c55af6a09fba5fe46dc53e1304.zip",
+        },
+        "Description": "Step Functions task: batch-writes heats to DynamoDB",
+        "Environment": {
+          "Variables": {
+            "NODE_OPTIONS": "--enable-source-maps",
+            "TABLE_NAME": {
+              "Fn::ImportValue": "TestStage-StorageStack:ExportsOutputRefMeetsTable194C39082FACE429",
+            },
+          },
+        },
+        "FunctionName": "swim-meet-store-heats-TestStage-ProcessingStack",
+        "Handler": "index.handler",
+        "MemorySize": 512,
+        "Role": {
+          "Fn::GetAtt": [
+            "StoreHeatsFnServiceRole098B8FA2",
+            "Arn",
+          ],
+        },
+        "Runtime": "nodejs22.x",
+        "Timeout": 300,
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "StoreHeatsFnServiceRole098B8FA2": {
+      "Metadata": {
+        "cdk_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "AwsSolutions-IAM4",
+              "reason": "AWSLambdaBasicExecutionRole for CloudWatch logging.",
+            },
+          ],
+        },
+      },
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "StoreHeatsFnServiceRoleDefaultPolicy10696113": {
+      "Metadata": {
+        "cdk_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "AwsSolutions-IAM4",
+              "reason": "AWSLambdaBasicExecutionRole for CloudWatch logging.",
+            },
+          ],
+        },
+      },
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "dynamodb:BatchWriteItem",
+                "dynamodb:UpdateItem",
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::ImportValue": "TestStage-StorageStack:ExportsOutputFnGetAttMeetsTable194C3908ArnAC801690",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "StoreHeatsFnServiceRoleDefaultPolicy10696113",
+        "Roles": [
+          {
+            "Ref": "StoreHeatsFnServiceRole098B8FA2",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "UpdateMeetStatusFn964CD653": {
+      "DependsOn": [
+        "UpdateMeetStatusFnServiceRoleDefaultPolicy3A9F2875",
+        "UpdateMeetStatusFnServiceRoleCF7E2FC8",
+      ],
+      "Metadata": {
+        "cdk_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "AwsSolutions-IAM4",
+              "reason": "AWSLambdaBasicExecutionRole for CloudWatch logging.",
+            },
+          ],
+        },
+      },
+      "Properties": {
+        "Architectures": [
+          "arm64",
+        ],
+        "Code": {
+          "S3Bucket": "cdk-hnb659fds-assets-123456789012-us-east-1",
+          "S3Key": "15964b8f2b3eaa29c4acabae34e08607925a23bcd04822d37777f47dcd1c0b2a.zip",
+        },
+        "Description": "Step Functions task: updates processingStatus on the META record",
+        "Environment": {
+          "Variables": {
+            "NODE_OPTIONS": "--enable-source-maps",
+            "TABLE_NAME": {
+              "Fn::ImportValue": "TestStage-StorageStack:ExportsOutputRefMeetsTable194C39082FACE429",
+            },
+          },
+        },
+        "FunctionName": "swim-meet-update-status-TestStage-ProcessingStack",
+        "Handler": "index.handler",
+        "MemorySize": 512,
+        "Role": {
+          "Fn::GetAtt": [
+            "UpdateMeetStatusFnServiceRoleCF7E2FC8",
+            "Arn",
+          ],
+        },
+        "Runtime": "nodejs22.x",
+        "Timeout": 300,
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "UpdateMeetStatusFnServiceRoleCF7E2FC8": {
+      "Metadata": {
+        "cdk_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "AwsSolutions-IAM4",
+              "reason": "AWSLambdaBasicExecutionRole for CloudWatch logging.",
+            },
+          ],
+        },
+      },
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "UpdateMeetStatusFnServiceRoleDefaultPolicy3A9F2875": {
+      "Metadata": {
+        "cdk_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "AwsSolutions-IAM4",
+              "reason": "AWSLambdaBasicExecutionRole for CloudWatch logging.",
+            },
+          ],
+        },
+      },
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "dynamodb:UpdateItem",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::ImportValue": "TestStage-StorageStack:ExportsOutputFnGetAttMeetsTable194C3908ArnAC801690",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "UpdateMeetStatusFnServiceRoleDefaultPolicy3A9F2875",
+        "Roles": [
+          {
+            "Ref": "UpdateMeetStatusFnServiceRoleCF7E2FC8",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "ValidateExtractionFn4CD1344B": {
+      "DependsOn": [
+        "ValidateExtractionFnServiceRole2548A707",
+      ],
+      "Metadata": {
+        "cdk_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "AwsSolutions-IAM4",
+              "reason": "AWSLambdaBasicExecutionRole for CloudWatch logging.",
+            },
+          ],
+        },
+      },
+      "Properties": {
+        "Architectures": [
+          "arm64",
+        ],
+        "Code": {
+          "S3Bucket": "cdk-hnb659fds-assets-123456789012-us-east-1",
+          "S3Key": "6167895d7c84e221ae2ff6c4cea898a75220a08ce4ad98f074ee1daa5e0492de.zip",
+        },
+        "Description": "Step Functions task: validates extracted heat JSON schema",
+        "Environment": {
+          "Variables": {
+            "NODE_OPTIONS": "--enable-source-maps",
+            "TABLE_NAME": {
+              "Fn::ImportValue": "TestStage-StorageStack:ExportsOutputRefMeetsTable194C39082FACE429",
+            },
+          },
+        },
+        "FunctionName": "swim-meet-validate-TestStage-ProcessingStack",
+        "Handler": "index.handler",
+        "MemorySize": 512,
+        "Role": {
+          "Fn::GetAtt": [
+            "ValidateExtractionFnServiceRole2548A707",
+            "Arn",
+          ],
+        },
+        "Runtime": "nodejs22.x",
+        "Timeout": 300,
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "ValidateExtractionFnServiceRole2548A707": {
+      "Metadata": {
+        "cdk_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "AwsSolutions-IAM4",
+              "reason": "AWSLambdaBasicExecutionRole for CloudWatch logging.",
+            },
+          ],
+        },
+      },
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+  },
+  "Rules": {
+    "CheckBootstrapVersion": {
+      "Assertions": [
+        {
+          "Assert": {
+            "Fn::Not": [
+              {
+                "Fn::Contains": [
+                  [
+                    "1",
+                    "2",
+                    "3",
+                    "4",
+                    "5",
+                  ],
+                  {
+                    "Ref": "BootstrapVersion",
+                  },
+                ],
+              },
+            ],
+          },
+          "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI.",
+        },
+      ],
+    },
+  },
+}
+`;
+
+exports[`StorageStack snapshot 1`] = `
+{
+  "Outputs": {
+    "ExportsOutputFnGetAttEncryptionKey1B843E66Arn91172964": {
+      "Export": {
+        "Name": "TestStage-StorageStack:ExportsOutputFnGetAttEncryptionKey1B843E66Arn91172964",
+      },
+      "Value": {
+        "Fn::GetAtt": [
+          "EncryptionKey1B843E66",
+          "Arn",
+        ],
+      },
+    },
+    "ExportsOutputFnGetAttMeetsTable194C3908ArnAC801690": {
+      "Export": {
+        "Name": "TestStage-StorageStack:ExportsOutputFnGetAttMeetsTable194C3908ArnAC801690",
+      },
+      "Value": {
+        "Fn::GetAtt": [
+          "MeetsTable194C3908",
+          "Arn",
+        ],
+      },
+    },
+    "ExportsOutputFnGetAttRawPdfBucket6B2950B2Arn1CBAE423": {
+      "Export": {
+        "Name": "TestStage-StorageStack:ExportsOutputFnGetAttRawPdfBucket6B2950B2Arn1CBAE423",
+      },
+      "Value": {
+        "Fn::GetAtt": [
+          "RawPdfBucket6B2950B2",
+          "Arn",
+        ],
+      },
+    },
+    "ExportsOutputRefMeetsTable194C39082FACE429": {
+      "Export": {
+        "Name": "TestStage-StorageStack:ExportsOutputRefMeetsTable194C39082FACE429",
+      },
+      "Value": {
+        "Ref": "MeetsTable194C3908",
+      },
+    },
+    "ExportsOutputRefRawPdfBucket6B2950B21144D893": {
+      "Export": {
+        "Name": "TestStage-StorageStack:ExportsOutputRefRawPdfBucket6B2950B21144D893",
+      },
+      "Value": {
+        "Ref": "RawPdfBucket6B2950B2",
+      },
+    },
+  },
+  "Parameters": {
+    "BootstrapVersion": {
+      "Default": "/cdk-bootstrap/hnb659fds/version",
+      "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]",
+      "Type": "AWS::SSM::Parameter::Value<String>",
+    },
+  },
+  "Resources": {
+    "BucketNotificationsHandler050a0587b7544547bf325f094a3db8347ECC3691": {
+      "DependsOn": [
+        "BucketNotificationsHandler050a0587b7544547bf325f094a3db834RoleDefaultPolicy2CF63D36",
+        "BucketNotificationsHandler050a0587b7544547bf325f094a3db834RoleB6FB88EC",
+      ],
+      "Properties": {
+        "Code": {
+          "ZipFile": "import boto3  # type: ignore
+import json
+import logging
+import urllib.request
+
+s3 = boto3.client("s3")
+
+EVENTBRIDGE_CONFIGURATION = 'EventBridgeConfiguration'
+CONFIGURATION_TYPES = ["TopicConfigurations", "QueueConfigurations", "LambdaFunctionConfigurations"]
+
+def handler(event: dict, context):
+  response_status = "SUCCESS"
+  error_message = ""
+  try:
+    props = event["ResourceProperties"]
+    notification_configuration = props["NotificationConfiguration"]
+    managed = props.get('Managed', 'true').lower() == 'true'
+    skipDestinationValidation = props.get('SkipDestinationValidation', 'false').lower() == 'true'
+    stack_id = event['StackId']
+    old = event.get("OldResourceProperties", {}).get("NotificationConfiguration", {})
+    if managed:
+      config = handle_managed(event["RequestType"], notification_configuration)
+    else:
+      config = handle_unmanaged(props["BucketName"], stack_id, event["RequestType"], notification_configuration, old)
+    s3.put_bucket_notification_configuration(Bucket=props["BucketName"], NotificationConfiguration=config, SkipDestinationValidation=skipDestinationValidation)
+  except Exception as e:
+    logging.exception("Failed to put bucket notification configuration")
+    response_status = "FAILED"
+    error_message = f"Error: {str(e)}. "
+  finally:
+    submit_response(event, context, response_status, error_message)
+
+def handle_managed(request_type, notification_configuration):
+  if request_type == 'Delete':
+    return {}
+  return notification_configuration
+
+def handle_unmanaged(bucket, stack_id, request_type, notification_configuration, old):
+  def get_id(n):
+    n['Id'] = ''
+    sorted_notifications = sort_filter_rules(n)
+    strToHash=json.dumps(sorted_notifications, sort_keys=True).replace('"Name": "prefix"', '"Name": "Prefix"').replace('"Name": "suffix"', '"Name": "Suffix"')
+    return f"{stack_id}-{hash(strToHash)}"
+  def with_id(n):
+    n['Id'] = get_id(n)
+    return n
+
+  external_notifications = {}
+  existing_notifications = s3.get_bucket_notification_configuration(Bucket=bucket)
+  for t in CONFIGURATION_TYPES:
+    if request_type == 'Update':
+        old_incoming_ids = [get_id(n) for n in old.get(t, [])]
+        external_notifications[t] = [n for n in existing_notifications.get(t, []) if not get_id(n) in old_incoming_ids]      
+    elif request_type == 'Delete':
+        external_notifications[t] = [n for n in existing_notifications.get(t, []) if not n['Id'].startswith(f"{stack_id}-")]
+    elif request_type == 'Create':
+        external_notifications[t] = [n for n in existing_notifications.get(t, [])]
+  if EVENTBRIDGE_CONFIGURATION in existing_notifications:
+    external_notifications[EVENTBRIDGE_CONFIGURATION] = existing_notifications[EVENTBRIDGE_CONFIGURATION]
+
+  if request_type == 'Delete':
+    return external_notifications
+
+  notifications = {}
+  for t in CONFIGURATION_TYPES:
+    external = external_notifications.get(t, [])
+    incoming = [with_id(n) for n in notification_configuration.get(t, [])]
+    notifications[t] = external + incoming
+
+  if EVENTBRIDGE_CONFIGURATION in notification_configuration:
+    notifications[EVENTBRIDGE_CONFIGURATION] = notification_configuration[EVENTBRIDGE_CONFIGURATION]
+  elif EVENTBRIDGE_CONFIGURATION in external_notifications:
+    notifications[EVENTBRIDGE_CONFIGURATION] = external_notifications[EVENTBRIDGE_CONFIGURATION]
+
+  return notifications
+
+def submit_response(event: dict, context, response_status: str, error_message: str):
+  response_body = json.dumps(
+    {
+      "Status": response_status,
+      "Reason": f"{error_message}See the details in CloudWatch Log Stream: {context.log_stream_name}",
+      "PhysicalResourceId": event.get("PhysicalResourceId") or event["LogicalResourceId"],
+      "StackId": event["StackId"],
+      "RequestId": event["RequestId"],
+      "LogicalResourceId": event["LogicalResourceId"],
+      "NoEcho": False,
+    }
+  ).encode("utf-8")
+  headers = {"content-type": "", "content-length": str(len(response_body))}
+  try:
+    req = urllib.request.Request(url=event["ResponseURL"], headers=headers, data=response_body, method="PUT")
+    with urllib.request.urlopen(req) as response:
+      print(response.read().decode("utf-8"))
+    print("Status code: " + response.reason)
+  except Exception as e:
+      print("send(..) failed executing request.urlopen(..): " + str(e))
+
+def sort_filter_rules(json_obj):
+  if not isinstance(json_obj, dict):
+      return json_obj
+  for key, value in json_obj.items():
+      if isinstance(value, dict):
+          json_obj[key] = sort_filter_rules(value)
+      elif isinstance(value, list):
+          json_obj[key] = [sort_filter_rules(item) for item in value]
+  if "Filter" in json_obj and "Key" in json_obj["Filter"] and "FilterRules" in json_obj["Filter"]["Key"]:
+      filter_rules = json_obj["Filter"]["Key"]["FilterRules"]
+      sorted_filter_rules = sorted(filter_rules, key=lambda x: x["Name"])
+      json_obj["Filter"]["Key"]["FilterRules"] = sorted_filter_rules
+  return json_obj",
+        },
+        "Description": "AWS CloudFormation handler for "Custom::S3BucketNotifications" resources (@aws-cdk/aws-s3)",
+        "Handler": "index.handler",
+        "Role": {
+          "Fn::GetAtt": [
+            "BucketNotificationsHandler050a0587b7544547bf325f094a3db834RoleB6FB88EC",
+            "Arn",
+          ],
+        },
+        "Runtime": "python3.13",
+        "Timeout": 300,
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "BucketNotificationsHandler050a0587b7544547bf325f094a3db834RoleB6FB88EC": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "BucketNotificationsHandler050a0587b7544547bf325f094a3db834RoleDefaultPolicy2CF63D36": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "s3:PutBucketNotification",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::GetAtt": [
+                  "RawPdfBucket6B2950B2",
+                  "Arn",
+                ],
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "BucketNotificationsHandler050a0587b7544547bf325f094a3db834RoleDefaultPolicy2CF63D36",
+        "Roles": [
+          {
+            "Ref": "BucketNotificationsHandler050a0587b7544547bf325f094a3db834RoleB6FB88EC",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "EncryptionKey1B843E66": {
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "Description": "Swim Meet — S3 and DynamoDB encryption key",
+        "EnableKeyRotation": true,
+        "KeyPolicy": {
+          "Statement": [
+            {
+              "Action": "kms:*",
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":iam::123456789012:root",
+                    ],
+                  ],
+                },
+              },
+              "Resource": "*",
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+      },
+      "Type": "AWS::KMS::Key",
+      "UpdateReplacePolicy": "Retain",
+    },
+    "MeetsTable194C3908": {
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "AttributeDefinitions": [
+          {
+            "AttributeName": "PK",
+            "AttributeType": "S",
+          },
+          {
+            "AttributeName": "SK",
+            "AttributeType": "S",
+          },
+        ],
+        "BillingMode": "PAY_PER_REQUEST",
+        "KeySchema": [
+          {
+            "AttributeName": "PK",
+            "KeyType": "HASH",
+          },
+          {
+            "AttributeName": "SK",
+            "KeyType": "RANGE",
+          },
+        ],
+        "PointInTimeRecoverySpecification": {
+          "PointInTimeRecoveryEnabled": true,
+        },
+        "SSESpecification": {
+          "SSEEnabled": true,
+        },
+        "StreamSpecification": {
+          "StreamViewType": "NEW_IMAGE",
+        },
+        "TableName": "swim-meets-TestStage-StorageStack",
+      },
+      "Type": "AWS::DynamoDB::Table",
+      "UpdateReplacePolicy": "Retain",
+    },
+    "ProcessedBucketDE59930C": {
+      "DeletionPolicy": "Retain",
+      "Metadata": {
+        "cdk_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "AwsSolutions-S1",
+              "reason": "Server-access logging for the processed-JSON bucket is acceptable to omit in dev; add a dedicated log bucket in production hardening phase.",
+            },
+          ],
+        },
+      },
+      "Properties": {
+        "BucketEncryption": {
+          "ServerSideEncryptionConfiguration": [
+            {
+              "ServerSideEncryptionByDefault": {
+                "KMSMasterKeyID": {
+                  "Fn::GetAtt": [
+                    "EncryptionKey1B843E66",
+                    "Arn",
+                  ],
+                },
+                "SSEAlgorithm": "aws:kms",
+              },
+            },
+          ],
+        },
+        "PublicAccessBlockConfiguration": {
+          "BlockPublicAcls": true,
+          "BlockPublicPolicy": true,
+          "IgnorePublicAcls": true,
+          "RestrictPublicBuckets": true,
+        },
+      },
+      "Type": "AWS::S3::Bucket",
+      "UpdateReplacePolicy": "Retain",
+    },
+    "ProcessedBucketNameParam4FFD0AE5": {
+      "Properties": {
+        "Description": "S3 bucket name for processed JSON snapshots",
+        "Name": "/swim-meet/test/storage/processed-bucket-name",
+        "Type": "String",
+        "Value": {
+          "Ref": "ProcessedBucketDE59930C",
+        },
+      },
+      "Type": "AWS::SSM::Parameter",
+    },
+    "ProcessedBucketPolicyAB48A58F": {
+      "Properties": {
+        "Bucket": {
+          "Ref": "ProcessedBucketDE59930C",
+        },
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "s3:*",
+              "Condition": {
+                "Bool": {
+                  "aws:SecureTransport": "false",
+                },
+              },
+              "Effect": "Deny",
+              "Principal": {
+                "AWS": "*",
+              },
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "ProcessedBucketDE59930C",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "ProcessedBucketDE59930C",
+                          "Arn",
+                        ],
+                      },
+                      "/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+      },
+      "Type": "AWS::S3::BucketPolicy",
+    },
+    "RawPdfBucket6B2950B2": {
+      "DeletionPolicy": "Retain",
+      "Metadata": {
+        "cdk_nag": {
+          "rules_to_suppress": [
+            {
+              "id": "AwsSolutions-S1",
+              "reason": "Server-access logging for the raw-PDF bucket is acceptable to omit in dev; add a dedicated log bucket in production hardening phase.",
+            },
+          ],
+        },
+      },
+      "Properties": {
+        "BucketEncryption": {
+          "ServerSideEncryptionConfiguration": [
+            {
+              "ServerSideEncryptionByDefault": {
+                "KMSMasterKeyID": {
+                  "Fn::GetAtt": [
+                    "EncryptionKey1B843E66",
+                    "Arn",
+                  ],
+                },
+                "SSEAlgorithm": "aws:kms",
+              },
+            },
+          ],
+        },
+        "LifecycleConfiguration": {
+          "Rules": [
+            {
+              "Status": "Enabled",
+              "Transitions": [
+                {
+                  "StorageClass": "GLACIER",
+                  "TransitionInDays": 365,
+                },
+              ],
+            },
+          ],
+        },
+        "PublicAccessBlockConfiguration": {
+          "BlockPublicAcls": true,
+          "BlockPublicPolicy": true,
+          "IgnorePublicAcls": true,
+          "RestrictPublicBuckets": true,
+        },
+        "VersioningConfiguration": {
+          "Status": "Enabled",
+        },
+      },
+      "Type": "AWS::S3::Bucket",
+      "UpdateReplacePolicy": "Retain",
+    },
+    "RawPdfBucketNameParamC18219DD": {
+      "Properties": {
+        "Description": "S3 bucket name for raw PDF uploads",
+        "Name": "/swim-meet/test/storage/raw-pdf-bucket-name",
+        "Type": "String",
+        "Value": {
+          "Ref": "RawPdfBucket6B2950B2",
+        },
+      },
+      "Type": "AWS::SSM::Parameter",
+    },
+    "RawPdfBucketNotifications306539ED": {
+      "DependsOn": [
+        "RawPdfBucketPolicyEF2D98B0",
+      ],
+      "Properties": {
+        "BucketName": {
+          "Ref": "RawPdfBucket6B2950B2",
+        },
+        "Managed": true,
+        "NotificationConfiguration": {
+          "EventBridgeConfiguration": {},
+        },
+        "ServiceToken": {
+          "Fn::GetAtt": [
+            "BucketNotificationsHandler050a0587b7544547bf325f094a3db8347ECC3691",
+            "Arn",
+          ],
+        },
+        "SkipDestinationValidation": false,
+      },
+      "Type": "Custom::S3BucketNotifications",
+    },
+    "RawPdfBucketPolicyEF2D98B0": {
+      "Properties": {
+        "Bucket": {
+          "Ref": "RawPdfBucket6B2950B2",
+        },
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "s3:*",
+              "Condition": {
+                "Bool": {
+                  "aws:SecureTransport": "false",
+                },
+              },
+              "Effect": "Deny",
+              "Principal": {
+                "AWS": "*",
+              },
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "RawPdfBucket6B2950B2",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "RawPdfBucket6B2950B2",
+                          "Arn",
+                        ],
+                      },
+                      "/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+      },
+      "Type": "AWS::S3::BucketPolicy",
+    },
+    "TableNameParam3E3123DC": {
+      "Properties": {
+        "Description": "DynamoDB table name for swim meets data",
+        "Name": "/swim-meet/test/storage/table-name",
+        "Type": "String",
+        "Value": {
+          "Ref": "MeetsTable194C3908",
+        },
+      },
+      "Type": "AWS::SSM::Parameter",
+    },
+    "TableStreamArnParam15549A4C": {
+      "Properties": {
+        "Description": "DynamoDB stream ARN for real-time integrations",
+        "Name": "/swim-meet/test/storage/table-stream-arn",
+        "Type": "String",
+        "Value": {
+          "Fn::GetAtt": [
+            "MeetsTable194C3908",
+            "StreamArn",
+          ],
+        },
+      },
+      "Type": "AWS::SSM::Parameter",
     },
   },
   "Rules": {
