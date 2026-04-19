@@ -19,6 +19,11 @@ export interface ApiStackProps extends cdk.StackProps {
   readonly userPoolClientId: string;
   /** Cognito hosted-domain base URL (e.g. https://swim-meet-dev.auth.us-east-1.amazoncognito.com). */
   readonly cognitoDomainUrl: string;
+  /**
+   * Identifier URI of the Cognito resource server (e.g. "https://api.swim-meet.example.com").
+   * Used to build full OAuth scope strings: `<identifier>/global.read` and `<identifier>/global.write`.
+   */
+  readonly apiResourceServerIdentifier: string;
   /** DynamoDB table ARN. */
   readonly tableArn: string;
   /** DynamoDB table name. */
@@ -147,11 +152,16 @@ export class ApiStack extends cdk.Stack {
     );
 
     // ── Routes ────────────────────────────────────────────────────────────────
+    // Full OAuth scope strings: <resourceServerIdentifier>/scopeName
+    const readScope = `${props.apiResourceServerIdentifier}/global.read`;
+    const writeScope = `${props.apiResourceServerIdentifier}/global.write`;
+
     httpApi.addRoutes({
       path: '/meets',
       methods: [apigw.HttpMethod.GET],
       integration: new apigw_integrations.HttpLambdaIntegration('ListMeetsIntegration', listMeetsFn),
       authorizer,
+      authorizationScopes: [readScope],
     });
 
     httpApi.addRoutes({
@@ -159,6 +169,7 @@ export class ApiStack extends cdk.Stack {
       methods: [apigw.HttpMethod.GET],
       integration: new apigw_integrations.HttpLambdaIntegration('GetHeatsIntegration', getHeatsFn),
       authorizer,
+      authorizationScopes: [readScope],
     });
 
     httpApi.addRoutes({
@@ -166,6 +177,7 @@ export class ApiStack extends cdk.Stack {
       methods: [apigw.HttpMethod.POST],
       integration: new apigw_integrations.HttpLambdaIntegration('UploadIntegration', uploadFn),
       authorizer,
+      authorizationScopes: [writeScope],
     });
 
     httpApi.addRoutes({
@@ -173,6 +185,7 @@ export class ApiStack extends cdk.Stack {
       methods: [apigw.HttpMethod.GET],
       integration: new apigw_integrations.HttpLambdaIntegration('MeetStatusIntegration', meetStatusFn),
       authorizer,
+      authorizationScopes: [readScope],
     });
 
     this.apiUrl = httpApi.apiEndpoint;

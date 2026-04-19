@@ -111,6 +111,7 @@ export class SwimMeetStage extends cdk.Stage {
       userPool: this.cognitoStack.userPool,
       userPoolClientId: this.cognitoStack.userPoolClient.userPoolClientId,
       cognitoDomainUrl: this.cognitoStack.userPoolDomain.baseUrl(),
+      apiResourceServerIdentifier: props.apiResourceServerIdentifier,
       tableArn: this.storageStack.table.tableArn,
       tableName: this.storageStack.table.tableName,
       rawPdfBucket: this.storageStack.rawPdfBucket,

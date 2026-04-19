@@ -354,6 +354,32 @@ test('ApiStack exports API URL SSM parameter', () => {
   });
 });
 
+test('ApiStack routes have correct authorization scopes', () => {
+  const app = new cdk.App();
+  const stage = buildTestStage(app);
+  const template = Template.fromStack(stage.apiStack);
+
+  const routes = template.findResources('AWS::ApiGatewayV2::Route');
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const routesByKey: Record<string, any> = {};
+  for (const r of Object.values(routes)) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    routesByKey[(r as any).Properties.RouteKey as string] = r;
+  }
+
+  const readScope = 'https://api.swim-meet.example.com/global.read';
+  const writeScope = 'https://api.swim-meet.example.com/global.write';
+
+  // GET routes should require read scope
+  expect(routesByKey['GET /meets'].Properties.AuthorizationScopes).toEqual([readScope]);
+  expect(routesByKey['GET /meets/{meetId}/heats'].Properties.AuthorizationScopes).toEqual([readScope]);
+  expect(routesByKey['GET /meets/{meetId}/status'].Properties.AuthorizationScopes).toEqual([readScope]);
+
+  // POST upload requires write scope
+  expect(routesByKey['POST /meets/upload'].Properties.AuthorizationScopes).toEqual([writeScope]);
+});
+
+
 test('SwimMeetStage includes all four stacks', () => {
   const app = new cdk.App();
   const stage = buildTestStage(app);

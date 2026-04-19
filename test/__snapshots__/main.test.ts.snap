@@ -545,6 +545,9 @@ exports[`ApiStack snapshot 1`] = `
         "ApiId": {
           "Ref": "SwimMeetApi82775B04",
         },
+        "AuthorizationScopes": [
+          "https://api.swim-meet.example.com/global.read",
+        ],
         "AuthorizationType": "JWT",
         "AuthorizerId": {
           "Ref": "SwimMeetApiCognitoAuthorizer9BAB2028",
@@ -656,6 +659,9 @@ exports[`ApiStack snapshot 1`] = `
         "ApiId": {
           "Ref": "SwimMeetApi82775B04",
         },
+        "AuthorizationScopes": [
+          "https://api.swim-meet.example.com/global.read",
+        ],
         "AuthorizationType": "JWT",
         "AuthorizerId": {
           "Ref": "SwimMeetApiCognitoAuthorizer9BAB2028",
@@ -767,6 +773,9 @@ exports[`ApiStack snapshot 1`] = `
         "ApiId": {
           "Ref": "SwimMeetApi82775B04",
         },
+        "AuthorizationScopes": [
+          "https://api.swim-meet.example.com/global.read",
+        ],
         "AuthorizationType": "JWT",
         "AuthorizerId": {
           "Ref": "SwimMeetApiCognitoAuthorizer9BAB2028",
@@ -878,6 +887,9 @@ exports[`ApiStack snapshot 1`] = `
         "ApiId": {
           "Ref": "SwimMeetApi82775B04",
         },
+        "AuthorizationScopes": [
+          "https://api.swim-meet.example.com/global.write",
+        ],
         "AuthorizationType": "JWT",
         "AuthorizerId": {
           "Ref": "SwimMeetApiCognitoAuthorizer9BAB2028",
@@ -1653,7 +1665,7 @@ Seed times prefixed with "X" are exhibition — keep the X prefix.
         ],
         "Code": {
           "S3Bucket": "cdk-hnb659fds-assets-123456789012-us-east-1",
-          "S3Key": "12e8832c964210bbc0f667ad31d02fbef85bc2615810cc27cb9a16d344c1bca0.zip",
+          "S3Key": "f8445e0b1a48f7a195a233375d864d147dcdc61494000cbf8579b29ff26a585c.zip",
         },
         "Description": "Durable orchestrator: runs the full PDF heat sheet extraction pipeline with automatic checkpointing",
         "DurableConfig": {
