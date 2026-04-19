@@ -1,0 +1,193 @@
+---
+name: aws-cdk-development
+description: AWS Cloud Development Kit (CDK) expert for building cloud infrastructure with TypeScript. Use when creating CDK stacks, defining CDK constructs, implementing infrastructure as code, or when the user mentions CDK, CloudFormation, IaC, cdk synth, cdk deploy, or wants to define AWS infrastructure programmatically. Covers CDK app structure, construct patterns, stack composition, and deployment workflows. This skill is pre-configured for the swim-meet project which uses TypeScript CDK with Cognito, cdk-nag, and projen.
+context: fork
+skills:
+  - aws-mcp-setup
+allowed-tools:
+  - mcp__cdk__*
+  - mcp__aws-mcp__*
+  - mcp__awsdocs__*
+  - Bash(cdk *)
+  - Bash(npm *)
+  - Bash(npx *)
+  - Bash(pnpm *)
+  - Bash(aws cloudformation *)
+  - Bash(aws sts get-caller-identity)
+hooks:
+  PreToolUse:
+    - matcher: Bash(cdk deploy*)
+      command: aws sts get-caller-identity --query Account --output text
+      once: true
+---
+
+# AWS CDK Development — swim-meet
+
+This skill provides comprehensive guidance for developing AWS infrastructure using the Cloud Development Kit (CDK) in the **swim-meet** repository. It includes integrated MCP servers for accessing latest AWS knowledge and CDK-specific utilities.
+
+## Project Context
+
+The swim-meet project is a **TypeScript CDK application** that provisions:
+- **Amazon Cognito** User Pool and App Client (Google federated sign-in)
+- SSM Parameter Store integration for secrets (no plaintext secrets in templates)
+- cdk-nag `AwsSolutionsChecks` applied at the app level for security validation
+- Managed with **projen** — edit `.projenrc.ts` and run `pnpm exec projen` to regenerate config files
+
+Key project files:
+- `src/main.ts` — CDK app entry point; applies cdk-nag and creates the stage
+- `src/swim-meet-stage.ts` — Stage definition (wraps stacks for multi-env support)
+- `src/cognito-stack.ts` — Cognito User Pool, App Client, identity provider configuration
+- `.projenrc.ts` — projen project configuration
+- `cdk.json` — CDK app configuration and context values
+
+## AWS Documentation Requirement
+
+Always verify AWS facts using MCP tools (`mcp__aws-mcp__*` or `mcp__*awsdocs*__*`) before answering. The `aws-mcp-setup` dependency is auto-loaded — if MCP tools are unavailable, guide the user through that skill's setup flow.
+
+## Integrated MCP Servers
+
+This skill is configured to use two MCP servers when available:
+
+### AWS CDK MCP Server (`mcp__cdk__*`)
+**When to use**: CDK-specific guidance and construct recommendations
+- Get CDK construct recommendations and best practices
+- Retrieve CDK pattern suggestions and API guidance
+- Validate CDK configurations
+- Access CDK-specific APIs and utilities
+
+### AWS Documentation / API MCP Server (`mcp__aws-mcp__*`, `mcp__awsdocs__*`)
+**When to use**: Verifying AWS service capabilities, regional availability, and API specs
+- Confirm service limits, quotas, and feature availability
+- Get latest API parameter specifications
+- Verify security best practices for AWS services
+
+## Core CDK Principles
+
+### Resource Naming
+
+**CRITICAL**: Do NOT explicitly specify resource names when they are optional in CDK constructs.
+
+**Why**: CDK-generated names enable reusable patterns, parallel deployments, and stack isolation.
+
+```typescript
+// ❌ BAD — explicit naming prevents reusability
+new lambda.Function(this, 'MyFunction', {
+  functionName: 'my-lambda',  // Avoid this
+});
+
+// ✅ GOOD — let CDK generate unique names
+new lambda.Function(this, 'MyFunction', {
+  // No functionName — CDK generates: StackName-MyFunctionXXXXXX
+});
+```
+
+### cdk-nag Integration
+
+The swim-meet project applies `AwsSolutionsChecks` via Aspects at the app level. **All new constructs must pass cdk-nag checks**. When adding resources:
+
+1. Run `cdk synth` and check for cdk-nag violations in the output
+2. Fix violations or add `NagSuppressions` with documented reasons:
+
+```typescript
+import { NagSuppressions } from 'cdk-nag';
+
+NagSuppressions.addResourceSuppressions(resource, [
+  {
+    id: 'AwsSolutions-L1',
+    reason: 'Lambda@Edge requires specific runtime for CloudFront compatibility',
+  },
+]);
+```
+
+### projen Workflow
+
+This project uses projen. **Never manually edit generated files** (e.g., `package.json`, workflow YAML files under `.github/workflows/`). Instead:
+
+1. Edit `.projenrc.ts`
+2. Run `pnpm exec projen` to regenerate
+3. Commit the resulting changes
+
+### Secrets Management
+
+Secrets are stored in **SSM Parameter Store** as `SecureString` and referenced via dynamic CloudFormation references — they never appear in synthesised templates:
+
+```typescript
+const secret = cdk.SecretValue.ssmSecure('/swim-meet/dev/google-client-secret');
+```
+
+## Pre-Deployment Validation
+
+Use a multi-layer validation strategy:
+
+### Layer 1: Type Check & Build
+```bash
+pnpm exec tsc --noEmit    # type-check only
+```
+
+### Layer 2: Tests (includes snapshot tests and eslint)
+```bash
+pnpm test
+```
+
+### Layer 3: CDK Synthesis (includes cdk-nag)
+```bash
+cdk synth
+```
+
+### Layer 4: Validation Script
+```bash
+.github/agents/aws-cdk-development/scripts/validate-stack.sh
+```
+
+## Development Workflow
+
+1. **Design** — plan infrastructure resources and relationships
+2. **Verify AWS Services** — use AWS Documentation MCP to confirm service availability and features
+3. **Implement** — write CDK constructs following best practices and cdk-nag rules
+4. **Validate** — run `pnpm test` and `cdk synth` to catch issues early
+5. **Review** — examine synthesised templates for correctness
+6. **Deploy** — run `cdk deploy` (confirms caller identity via pre-hook)
+7. **Verify** — confirm resources are created correctly in the AWS Console or CLI
+
+## Lambda Function Development
+
+**TypeScript/JavaScript**: Use `aws-cdk-lib/aws-lambda-nodejs`
+```typescript
+import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
+
+new NodejsFunction(this, 'MyFunction', {
+  entry: 'lambda/handler.ts',
+  handler: 'handler',
+  bundling: {
+    minify: true,
+    externalModules: ['@aws-sdk/*'],
+  },
+});
+```
+
+## Stack Organization
+
+- Use nested stacks for complex applications
+- Separate concerns into logical construct boundaries
+- Export values that other stacks may need using `CfnOutput`
+- Use CDK context (`cdk.json` or `--context`) for environment-specific configuration
+
+## Using MCP Servers Effectively
+
+### CDK MCP (`mcp__cdk__*`)
+- CDK construct selection and usage
+- CDK best practice patterns
+- Construct property configurations
+
+### AWS Documentation MCP (`mcp__aws-mcp__*`, `mcp__awsdocs__*`)
+- Verify new AWS service features before implementing
+- Check regional availability for all required services
+- Confirm latest API specifications and service limits
+
+## Additional Resources
+
+- **Validation Script**: `.github/agents/aws-cdk-development/scripts/validate-stack.sh`
+- **CDK Patterns Reference**: `.github/agents/aws-cdk-development/references/cdk-patterns.md`
+- **MCP Server Setup**: `docs/aws-cdk-mcp-server-setup.md`
+- **CDK MCP Server source**: [awslabs.cdk-mcp-server](https://github.com/awslabs/mcp) (run via `uvx awslabs.cdk-mcp-server@latest`)
+- **AWS Documentation MCP**: [AWS MCP Servers](https://awslabs.github.io/mcp/)
