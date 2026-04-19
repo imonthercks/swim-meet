@@ -1007,7 +1007,7 @@ exports[`ApiStack snapshot 1`] = `
         ],
         "Code": {
           "S3Bucket": "cdk-hnb659fds-assets-123456789012-us-east-1",
-          "S3Key": "4fd39e294a803854ee777f168118adaf76d9a87e34ae6e87f94d93051b94c840.zip",
+          "S3Key": "a63d6e9c26345e04ea228b2bf1fa3193b5914aed26999d44d91f460c1d284402.zip",
         },
         "Description": "POST /meets/upload — generates presigned S3 PUT URL (write scope required)",
         "Environment": {

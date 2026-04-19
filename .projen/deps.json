@@ -76,30 +76,37 @@
     },
     {
       "name": "@aws-sdk/client-bedrock-agent-runtime",
+      "version": "^3.0.0",
       "type": "runtime"
     },
     {
       "name": "@aws-sdk/client-dynamodb",
+      "version": "^3.0.0",
       "type": "runtime"
     },
     {
       "name": "@aws-sdk/client-lambda",
+      "version": "^3.0.0",
       "type": "runtime"
     },
     {
       "name": "@aws-sdk/client-s3",
+      "version": "^3.0.0",
       "type": "runtime"
     },
     {
       "name": "@aws-sdk/s3-request-presigner",
+      "version": "^3.0.0",
       "type": "runtime"
     },
     {
       "name": "@aws-sdk/util-dynamodb",
+      "version": "^3.0.0",
       "type": "runtime"
     },
     {
       "name": "@aws/durable-execution-sdk-js",
+      "version": "^1.0.0",
       "type": "runtime"
     },
     {

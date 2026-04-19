@@ -97,7 +97,6 @@ export class SwimMeetStage extends cdk.Stage {
     this.processingStack = new ProcessingStack(this, 'ProcessingStack', {
       env: props.env,
       rawPdfBucket: this.storageStack.rawPdfBucket,
-      processedBucket: this.storageStack.processedBucket,
       tableArn: this.storageStack.table.tableArn,
       tableName: this.storageStack.table.tableName,
       bedrockModelId,

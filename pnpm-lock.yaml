@@ -9,25 +9,25 @@ importers:
   .:
     dependencies:
       '@aws-sdk/client-bedrock-agent-runtime':
-        specifier: '*'
+        specifier: ^3.0.0
         version: 3.1032.0
       '@aws-sdk/client-dynamodb':
-        specifier: '*'
+        specifier: ^3.0.0
         version: 3.1032.0
       '@aws-sdk/client-lambda':
-        specifier: '*'
+        specifier: ^3.0.0
         version: 3.1032.0
       '@aws-sdk/client-s3':
-        specifier: '*'
+        specifier: ^3.0.0
         version: 3.1032.0
       '@aws-sdk/s3-request-presigner':
-        specifier: '*'
+        specifier: ^3.0.0
         version: 3.1032.0
       '@aws-sdk/util-dynamodb':
-        specifier: '*'
+        specifier: ^3.0.0
         version: 3.996.2(@aws-sdk/client-dynamodb@3.1032.0)
       '@aws/durable-execution-sdk-js':
-        specifier: '*'
+        specifier: ^1.0.0
         version: 1.1.1
       aws-cdk-lib:
         specifier: ^2.189.1

@@ -13,19 +13,19 @@ const project = new awscdk.AwsCdkTypeScriptApp({
     // so these are not bundled into the Lambda ZIP — they are available from the
     // Lambda runtime environment.  Listing them as deps (not devDeps) satisfies the
     // eslint import/no-extraneous-dependencies rule.
-    '@aws-sdk/client-bedrock-agent-runtime',
-    '@aws-sdk/client-dynamodb',
-    '@aws-sdk/client-s3',
-    '@aws-sdk/s3-request-presigner',
-    '@aws-sdk/util-dynamodb',
+    '@aws-sdk/client-bedrock-agent-runtime@^3.0.0',
+    '@aws-sdk/client-dynamodb@^3.0.0',
+    '@aws-sdk/client-s3@^3.0.0',
+    '@aws-sdk/s3-request-presigner@^3.0.0',
+    '@aws-sdk/util-dynamodb@^3.0.0',
     // AWS Lambda Durable Execution SDK — provides withDurableExecution wrapper and
     // DurableContext for writing checkpointed, long-running Lambda orchestrators.
     // This package is NOT in the @aws-sdk/* namespace so esbuild bundles it into
     // the Lambda ZIP automatically (it is not available in the runtime environment).
-    '@aws/durable-execution-sdk-js',
+    '@aws/durable-execution-sdk-js@^1.0.0',
     // @aws-sdk/client-lambda is a peer dep of the durable execution SDK (used by
     // the SDK to call CheckpointDurableExecution / GetDurableExecutionState APIs).
-    '@aws-sdk/client-lambda',
+    '@aws-sdk/client-lambda@^3.0.0',
   ],
   description: 'Swim Meet CDK infrastructure including Cognito User Pool with Google federation',
   devDeps: [
