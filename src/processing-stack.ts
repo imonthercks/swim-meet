@@ -17,8 +17,6 @@ import { StorageStack } from './storage-stack';
 export interface ProcessingStackProps extends cdk.StackProps {
   /** Raw-PDF S3 bucket (from StorageStack). */
   readonly rawPdfBucket: s3.Bucket;
-  /** Processed-JSON S3 bucket (from StorageStack). */
-  readonly processedBucket: s3.Bucket;
   /** DynamoDB table ARN. */
   readonly tableArn: string;
   /** DynamoDB table name. */
