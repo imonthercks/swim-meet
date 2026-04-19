@@ -166,6 +166,117 @@ new NodejsFunction(this, 'MyFunction', {
 });
 ```
 
+## Workflow Orchestration: Lambda Durable Functions (preferred) vs Step Functions
+
+> **Default choice: AWS Lambda Durable Functions.** Use Step Functions only when you specifically need its visual workflow editor, branching across separate AWS services, or event-driven human approval patterns.
+
+### Lambda Durable Functions
+
+Lambda Durable Functions are the **preferred** way to implement long-running, stateful, checkpointed workflows in the swim-meet project. They keep orchestration logic inside a single Lambda function (using `@aws/durable-execution-sdk-js`) without requiring a separate Step Functions state machine.
+
+**CDK setup**: Enable durable execution by setting `durableConfig` on the `NodejsFunction`:
+
+```typescript
+import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
+import * as lambda from 'aws-cdk-lib/aws-lambda';
+
+const orchestratorFn = new NodejsFunction(this, 'OrchestratorFn', {
+  entry: 'src/lambda/orchestrator.ts',
+  handler: 'handler',
+  runtime: lambda.Runtime.NODEJS_22_X,
+  timeout: cdk.Duration.minutes(15), // per-invocation timeout (max 15 min)
+  durableConfig: {
+    executionTimeout: cdk.Duration.hours(1),  // total workflow wall-clock budget
+    retentionPeriod: cdk.Duration.days(14),   // how long execution history is kept
+  },
+});
+```
+
+**Handler pattern** using `@aws/durable-execution-sdk-js`:
+
+```typescript
+import {
+  withDurableExecution,
+  DurableContext,
+  DurableExecutionHandler,
+} from '@aws/durable-execution-sdk-js';
+
+const durableHandler: DurableExecutionHandler<MyEvent, MyResult> = async (
+  event: MyEvent,
+  context: DurableContext,
+) => {
+  // Each step is checkpointed — replays skip completed steps on re-invocation
+  const result1 = await context.step('step-1', async () => doSomething(event));
+  const result2 = await context.step('step-2', async () => doSomethingElse(result1));
+
+  // Built-in retry per step
+  const retried = await context.step('step-with-retry', async () => callExternalService(), {
+    retryStrategy: (error, attempt) => ({
+      shouldRetry: attempt < 3 && /throttl/i.test(String(error)),
+      delay: { seconds: 30 * Math.pow(2, attempt - 1) },
+    }),
+  });
+
+  return retried;
+};
+
+export const handler = withDurableExecution(durableHandler);
+```
+
+**Required dependencies** (in `.projenrc.ts`):
+
+```typescript
+deps: [
+  '@aws/durable-execution-sdk-js',   // NOT in @aws-sdk/* namespace — gets bundled into Lambda ZIP
+  '@aws-sdk/client-lambda',           // peer dep of the SDK for checkpoint/state APIs
+],
+devDeps: [
+  '@types/aws-lambda',                // peer dep required for TypeScript compilation
+],
+```
+
+> **Bundling note**: `@aws/durable-execution-sdk-js` is NOT part of `@aws-sdk/*`, so esbuild/NodejsFunction does **not** exclude it automatically. It will be bundled into the Lambda ZIP, which is the correct behaviour.
+
+**IAM for self-referential durable execution APIs**: The Lambda Durable Execution service calls `lambda:CheckpointDurableExecution`, `lambda:GetDurableExecutionState`, and `lambda:InvokeFunction` on the function itself. Granting these using `orchestratorFn.functionArn` creates a circular CloudFormation dependency (policy → function → policy). Use account/region pseudo-parameters with a function name prefix wildcard instead:
+
+```typescript
+orchestratorFn.addToRolePolicy(new iam.PolicyStatement({
+  actions: [
+    'lambda:GetDurableExecution',
+    'lambda:GetDurableExecutionState',
+    'lambda:CheckpointDurableExecution',
+    'lambda:InvokeFunction',
+  ],
+  // Use Aws pseudo-parameters + name prefix — avoids circular CloudFormation dependency
+  resources: [
+    `arn:${cdk.Aws.PARTITION}:lambda:${region}:${cdk.Stack.of(this).account}:function:my-orchestrator-*`,
+  ],
+}));
+```
+
+**Invoking the durable orchestrator asynchronously** (e.g. from an SQS-triggered initiator Lambda):
+
+```typescript
+import { InvokeCommand, LambdaClient } from '@aws-sdk/client-lambda';
+
+const lambdaClient = new LambdaClient({});
+await lambdaClient.send(new InvokeCommand({
+  FunctionName: process.env.ORCHESTRATOR_ARN,
+  InvocationType: 'Event', // async — fire and forget
+  Payload: Buffer.from(JSON.stringify(payload)),
+}));
+```
+
+### When to Use Step Functions Instead
+
+Use Step Functions when you need:
+- A **visual workflow editor** and human-readable state machine JSON for compliance / review
+- **Long waits** (days/weeks) between steps that exceed Lambda's 15-minute per-invocation limit *and* the durable execution timeout
+- **Cross-service tasks** (e.g. `tasks.EcsRunTask`, `tasks.GlueStartJobRun`) with native SDK integrations
+- **Human approval steps** via API Gateway callback tokens
+
+
+
 ## Stack Organization
 
 - Use nested stacks for complex applications

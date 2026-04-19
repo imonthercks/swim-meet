@@ -8,6 +8,7 @@ This reference provides detailed patterns, anti-patterns, and best practices for
 - [Construct Patterns](#construct-patterns)
 - [Security Patterns](#security-patterns)
 - [Lambda Integration](#lambda-integration)
+- [Workflow Orchestration](#workflow-orchestration)
 - [Testing Patterns](#testing-patterns)
 - [Cost Optimization](#cost-optimization)
 - [Anti-Patterns](#anti-patterns)
@@ -192,6 +193,186 @@ new NodejsFunction(this, 'Function', {
 });
 ```
 
+## Workflow Orchestration
+
+### ✅ Lambda Durable Functions (Preferred)
+
+**Default choice** for long-running, stateful, checkpointed workflows. AWS Lambda Durable Functions use `@aws/durable-execution-sdk-js` to keep all orchestration logic inside a single Lambda function — no Step Functions state machine needed.
+
+The Lambda Durable Execution service persists each completed `context.step()` result. On re-invocation (e.g. after a timeout), completed steps are replayed instantly from cache — the function resumes from the last checkpoint without re-running earlier work.
+
+#### CDK Construct
+
+```typescript
+import * as cdk from 'aws-cdk-lib';
+import * as lambda from 'aws-cdk-lib/aws-lambda';
+import * as iam from 'aws-cdk-lib/aws-iam';
+import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
+
+const orchestratorFn = new NodejsFunction(this, 'OrchestratorFn', {
+  entry: 'src/lambda/orchestrator.ts',
+  handler: 'handler',
+  runtime: lambda.Runtime.NODEJS_22_X,
+  architecture: lambda.Architecture.ARM_64,
+  timeout: cdk.Duration.minutes(15),   // Lambda per-invocation limit
+  memorySize: 1024,
+  bundling: {
+    externalModules: ['@aws-sdk/*'],   // @aws/durable-execution-sdk-js IS bundled (not @aws-sdk/*)
+  },
+  durableConfig: {
+    executionTimeout: cdk.Duration.hours(1),  // total workflow wall-clock budget
+    retentionPeriod: cdk.Duration.days(14),   // execution history retention
+  },
+  environment: {
+    TABLE_NAME: table.tableName,
+  },
+});
+```
+
+#### IAM for Self-Referential Durable Execution Permissions
+
+> ⚠️ **Important**: Adding an IAM policy to a function that references `orchestratorFn.functionArn` creates a **circular CloudFormation dependency** (policy depends on function; function depends on policy). Use CDK pseudo-parameters and a name prefix wildcard instead.
+
+```typescript
+// ❌ BAD — creates circular CloudFormation dependency
+orchestratorFn.addToRolePolicy(new iam.PolicyStatement({
+  actions: ['lambda:CheckpointDurableExecution', 'lambda:InvokeFunction'],
+  resources: [orchestratorFn.functionArn],  // Ref to self = circular!
+}));
+
+// ✅ GOOD — use pseudo-parameters + name prefix wildcard
+const region = cdk.Stack.of(this).region;
+orchestratorFn.addToRolePolicy(new iam.PolicyStatement({
+  actions: [
+    'lambda:GetDurableExecution',
+    'lambda:GetDurableExecutionState',
+    'lambda:CheckpointDurableExecution',
+    'lambda:InvokeFunction',
+  ],
+  resources: [
+    `arn:${cdk.Aws.PARTITION}:lambda:${region}:${cdk.Stack.of(this).account}:function:my-orchestrator-prefix-*`,
+  ],
+}));
+```
+
+#### projenrc.ts Dependencies
+
+```typescript
+// .projenrc.ts
+deps: [
+  '@aws/durable-execution-sdk-js',   // Bundled into Lambda ZIP (not in @aws-sdk/* namespace)
+  '@aws-sdk/client-lambda',           // Peer dep of SDK — used for checkpoint/state APIs
+],
+devDeps: [
+  '@types/aws-lambda',                // Peer type dep — required for TypeScript compilation
+],
+```
+
+#### Handler Pattern
+
+```typescript
+// src/lambda/orchestrator.ts
+import {
+  withDurableExecution,
+  DurableContext,
+  DurableExecutionHandler,
+} from '@aws/durable-execution-sdk-js';
+
+interface WorkflowInput { id: string; bucket: string; key: string; }
+
+const durableHandler: DurableExecutionHandler<WorkflowInput, void> = async (
+  event: WorkflowInput,
+  context: DurableContext,
+) => {
+  context.logger.info('Workflow started', { id: event.id });
+
+  try {
+    // Step 1 — result cached after first run; skipped on replay
+    await context.step('step-1-initialize', async () => {
+      await initializeRecord(event.id);
+    });
+
+    // Step 2 — with per-step retry on throttling
+    const extracted = await context.step(
+      'step-2-extract',
+      async () => extractData(event.bucket, event.key),
+      {
+        retryStrategy: (error, attempt) => ({
+          shouldRetry: attempt < 3 && /throttl/i.test(String(error)),
+          delay: { seconds: 30 * Math.pow(2, attempt - 1) },
+        }),
+      },
+    );
+
+    // Step 3 — validate
+    const validated = await context.step('step-3-validate', async () =>
+      validate(extracted),
+    );
+
+    // Step 4 — store
+    await context.step('step-4-store', async () => store(event.id, validated));
+
+  } catch (err) {
+    // Error handling — mark record as FAILED
+    await updateStatus(event.id, 'FAILED', err instanceof Error ? err.message : String(err));
+    throw err; // Re-throw so the durable framework records the failed execution
+  }
+};
+
+export const handler = withDurableExecution(durableHandler);
+```
+
+#### Triggering the Orchestrator Asynchronously
+
+Use async invocation (`InvocationType: 'Event'`) from a trigger Lambda (e.g. SQS-triggered initiator):
+
+```typescript
+// src/lambda/initiator.ts
+import { InvokeCommand, LambdaClient } from '@aws-sdk/client-lambda';
+
+const lambdaClient = new LambdaClient({});
+const ORCHESTRATOR_ARN = process.env.ORCHESTRATOR_ARN!;
+
+await lambdaClient.send(new InvokeCommand({
+  FunctionName: ORCHESTRATOR_ARN,
+  InvocationType: 'Event',  // async — fire and forget
+  Payload: Buffer.from(JSON.stringify({ id, bucket, key })),
+}));
+```
+
+Grant invoke permission in CDK:
+```typescript
+orchestratorFn.grantInvoke(initiatorFn);
+```
+
+### Step Functions — When To Use It Instead
+
+Use Step Functions only for these scenarios:
+- **Visual workflow editor** required (compliance, review, auditing with graphical state machine)
+- **Very long inter-step waits** (days/weeks) that exceed both Lambda's 15-min invocation limit AND durable execution timeout
+- **Native SDK integrations** with other AWS services (e.g. `tasks.EcsRunTask`, `tasks.GlueStartJobRun`, `tasks.BedrockInvokeModel`)
+- **Human-in-the-loop approval** via API Gateway callback tokens
+
+### Anti-Pattern: Using Step Functions for Orchestration That Fits in Durable Lambda
+
+```typescript
+// ❌ BAD — Step Functions overkill for sequential Lambda → Lambda orchestration
+const sfnChain = initStep.next(extractStep).next(validateStep).next(storeStep);
+const stateMachine = new sfn.StateMachine(this, 'SM', {
+  definitionBody: sfn.DefinitionBody.fromChainable(sfnChain),
+  stateMachineType: sfn.StateMachineType.STANDARD,
+});
+
+// ✅ GOOD — single Lambda Durable Function with context.step() calls
+const orchestratorFn = new NodejsFunction(this, 'OrchestratorFn', {
+  entry: 'src/lambda/orchestrator.ts',
+  durableConfig: {
+    executionTimeout: cdk.Duration.hours(1),
+    retentionPeriod: cdk.Duration.days(14),
+  },
+});
+```
+
 ## Testing Patterns
 
 ### Snapshot Testing
@@ -315,6 +496,42 @@ new cognito.UserPoolIdentityProviderGoogle(this, 'Google', {
 const secret = cdk.SecretValue.ssmSecure('/swim-meet/dev/google-client-secret');
 ```
 
+### ❌ Using Step Functions When Lambda Durable Functions Are Sufficient
+
+```typescript
+// BAD — Step Functions overkill for sequential Lambda-only workflows
+const stateMachine = new sfn.StateMachine(this, 'SM', {
+  definitionBody: sfn.DefinitionBody.fromChainable(step1.next(step2).next(step3)),
+  stateMachineType: sfn.StateMachineType.STANDARD,
+});
+
+// GOOD — single Lambda Durable Function handles checkpointing natively
+const orchestratorFn = new NodejsFunction(this, 'OrchestratorFn', {
+  entry: 'src/lambda/orchestrator.ts',
+  durableConfig: {
+    executionTimeout: cdk.Duration.hours(1),
+    retentionPeriod: cdk.Duration.days(14),
+  },
+});
+// Each context.step() in the handler is automatically checkpointed
+```
+
+### ❌ Self-Referential IAM ARN on Lambda (Creates Circular Dependency)
+
+```typescript
+// BAD — circular CloudFormation dependency: policy references function, function references role which references policy
+myFn.addToRolePolicy(new iam.PolicyStatement({
+  actions: ['lambda:InvokeFunction'],
+  resources: [myFn.functionArn],  // Fn::GetAtt creates the cycle
+}));
+
+// GOOD — use pseudo-parameters + function name prefix wildcard
+myFn.addToRolePolicy(new iam.PolicyStatement({
+  actions: ['lambda:InvokeFunction'],
+  resources: [`arn:${cdk.Aws.PARTITION}:lambda:${region}:${account}:function:my-fn-prefix-*`],
+}));
+```
+
 ### ❌ Ignoring cdk-nag Violations
 
 All resources must pass `AwsSolutionsChecks`. When a violation cannot be remediated, suppress it with a documented reason:
@@ -342,3 +559,4 @@ Always edit `.projenrc.ts` and run `pnpm exec projen` to update generated files 
 - **Validate** with cdk-nag before deployment (`cdk synth`)
 - **Follow** projen workflow — edit `.projenrc.ts`, not generated files
 - **Run** the validation script before deploying to production
+- **Use Lambda Durable Functions** (`@aws/durable-execution-sdk-js` + `durableConfig`) for long-running checkpointed workflows — prefer over Step Functions
