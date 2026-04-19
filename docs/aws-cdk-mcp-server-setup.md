@@ -45,23 +45,19 @@ Ensure the following files are on your **default branch** (the `copilot-setup-st
 1. Navigate to your repository on GitHub.
 2. Click **Actions** → **Copilot Setup Steps**.
 3. Click **Run workflow** to trigger a manual run.
-4. Verify all steps succeed, especially **Install AWS CDK MCP server globally**.
+4. Verify all steps succeed, especially **Pre-cache AWS CDK MCP server**.
 
-### Step 3: Configure the Copilot environment variable for the MCP server
+### Step 3: Connect the CDK MCP server (stdio — no configuration needed)
 
-The Copilot cloud agent uses the `copilot` GitHub Actions environment to pass secrets and variables to the agent. You need to tell the agent how to connect to the CDK MCP server.
-
-#### Option A: stdio transport (local process — recommended)
-
-Because `awslabs.cdk-mcp-server` is invoked via `uvx` (pre-installed in the agent's environment), it runs as a local process. No additional environment variables are required — the agent runs the server via:
+The CDK MCP server runs as a local stdio process and requires no extra environment variables. The Copilot cloud agent invokes it automatically using:
 
 ```
 uvx awslabs.cdk-mcp-server@latest
 ```
 
-The skill's `allowed-tools` section already authorises `mcp__cdk__*` tools, which map to the CDK MCP server when it is available.
+The `uv`/`uvx` tool is already pre-installed by the setup steps workflow. No remote endpoint or API key is required.
 
-#### Option B: Remote MCP server (advanced)
+#### Optional: Remote MCP server (advanced)
 
 If you want to run the CDK MCP server as a persistent remote service (e.g., on AWS Lambda or a container), you can expose it over HTTP/SSE and configure the agent to connect to it:
 

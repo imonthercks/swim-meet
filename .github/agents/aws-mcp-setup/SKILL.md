@@ -26,7 +26,7 @@ Before configuring, check if AWS MCP tools are already available:
 
 Look for these tool name patterns in the agent's available tools:
 - `mcp__aws-mcp__*` or `mcp__aws__*` → Full AWS MCP Server configured
-- `mcp__*awsdocs*__aws___*` → AWS Documentation MCP configured
+- `mcp__awsdocs__aws___*` → AWS Documentation MCP configured
 
 ## Step 2: Choose Configuration Method
 

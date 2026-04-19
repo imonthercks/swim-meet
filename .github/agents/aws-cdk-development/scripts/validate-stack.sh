@@ -37,11 +37,18 @@ info()    { echo "ℹ $1"; }
 
 # ── Prerequisites ─────────────────────────────────────────────────────────────
 
-if ! command -v cdk &> /dev/null; then
-  error "AWS CDK CLI not found. Install with: npm install -g aws-cdk"
+# Prefer local CDK CLI (installed as a devDependency) via pnpm exec.
+# Fall back to global cdk only if pnpm exec isn't available.
+if command -v pnpm &> /dev/null && pnpm exec cdk --version &> /dev/null 2>&1; then
+  CDK_CMD="pnpm exec cdk"
+  success "AWS CDK CLI found via pnpm exec ($(pnpm exec cdk --version))"
+elif command -v cdk &> /dev/null; then
+  CDK_CMD="cdk"
+  success "AWS CDK CLI found globally ($(cdk --version))"
+else
+  error "AWS CDK CLI not found. Run 'pnpm install' to install project devDependencies (includes aws-cdk)."
   exit 1
 fi
-success "AWS CDK CLI found ($(cdk --version))"
 
 if ! command -v pnpm &> /dev/null; then
   error "pnpm not found. Install with: npm install -g pnpm@10"
@@ -77,7 +84,7 @@ fi
 
 echo ""
 info "Running CDK synthesis (includes cdk-nag checks)..."
-CDK_SYNTH_OUTPUT=$(cdk synth --quiet 2>&1) || CDK_SYNTH_EXIT=$?
+CDK_SYNTH_OUTPUT=$(${CDK_CMD} synth --quiet 2>&1) || CDK_SYNTH_EXIT=$?
 
 if [ "${CDK_SYNTH_EXIT:-0}" -ne 0 ]; then
   error "CDK synthesis failed"

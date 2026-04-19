@@ -29,18 +29,15 @@ jobs:
                   node-version: "20"
 
             - name: Set up pnpm
-              uses: pnpm/action-setup@v4
+              uses: pnpm/action-setup@v5
               with:
-                  version: "10"
+                  version: "10.33.0"
 
             - name: Install project dependencies
               run: pnpm install --frozen-lockfile
-
-            - name: Install AWS CDK CLI globally
-              run: npm install -g aws-cdk
 
             - name: Install uv (provides uvx for running AWS MCP servers)
               uses: astral-sh/setup-uv@v6
 
             - name: Pre-cache AWS CDK MCP server
-              run: uvx awslabs.cdk-mcp-server@latest --help || true
+              run: uvx awslabs.cdk-mcp-server@latest --help
