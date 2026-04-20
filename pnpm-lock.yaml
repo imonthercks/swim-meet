@@ -43,7 +43,7 @@ importers:
         specifier: ^2
         version: 2.13.0(eslint@9.39.4)(typescript@6.0.3)
       '@types/aws-lambda':
-        specifier: '*'
+        specifier: ^8.0.0
         version: 8.10.161
       '@types/jest':
         specifier: ^30.0.0

@@ -30,7 +30,7 @@ const project = new awscdk.AwsCdkTypeScriptApp({
   description: 'Swim Meet CDK infrastructure including Cognito User Pool with Google federation',
   devDeps: [
     // aws-lambda types are a peer dependency of @aws/durable-execution-sdk-js
-    '@types/aws-lambda',
+    '@types/aws-lambda@^8.0.0',
   ],
 });
 
