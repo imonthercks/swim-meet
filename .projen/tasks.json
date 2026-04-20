@@ -221,7 +221,7 @@
           "exec": "pnpm i --no-frozen-lockfile"
         },
         {
-          "exec": "pnpm update @stylistic/eslint-plugin @types/jest @types/node @typescript-eslint/eslint-plugin @typescript-eslint/parser aws-cdk esbuild eslint-import-resolver-typescript eslint-plugin-import eslint jest jest-junit projen ts-jest ts-node typescript aws-cdk-lib cdk-nag constructs"
+          "exec": "pnpm update @stylistic/eslint-plugin @types/aws-lambda @types/jest @types/node @typescript-eslint/eslint-plugin @typescript-eslint/parser aws-cdk esbuild eslint-import-resolver-typescript eslint-plugin-import eslint jest jest-junit projen ts-jest ts-node typescript @aws-sdk/client-bedrock-agent-runtime @aws-sdk/client-dynamodb @aws-sdk/client-lambda @aws-sdk/client-s3 @aws-sdk/s3-request-presigner @aws-sdk/util-dynamodb @aws/durable-execution-sdk-js aws-cdk-lib cdk-nag constructs"
         },
         {
           "exec": "pnpm exec projen"
